@@ -23,10 +23,10 @@ Membangun chatbot LLM berbasis RAG yang dapat memahami dan menjawab pertanyaan t
 ## 📊 Output bisnis yang diharapkan
 * Chatbot mampu menjawab pertanyaan di atas dengan akurasi tinggi, berdasarkan isi dokumen PDF (bukan hasil halusinasi).
 * Dapat digunakan oleh:
-    1. Customer service bank
-    2. Legal officer
-    3. Auditor internal
-    4. Nasabah melalui portal web / chatbot
+1. Customer service bank
+2. Legal officer
+3. Auditor internal
+4. Nasabah melalui portal web / chatbot
 
 ## 💰 Potensi penerapan bisnis
 | Bidang                     | Implementasi                                     |
