@@ -27,3 +27,13 @@ Membangun chatbot LLM berbasis RAG yang dapat memahami dan menjawab pertanyaan t
     2. Legal officer
     3. Auditor internal
     4. Nasabah melalui portal web / chatbot
+
+## 💰 Potensi penerapan bisnis
+| Bidang                     | Implementasi                                     |
+| -------------------------- | ------------------------------------------------ |
+| **Perbankan & Kredit**     | Chatbot analisis kontrak kredit atau hipotek     |
+| **Properti / Real Estate** | Tanya jawab kontrak pembelian atau sewa properti |
+| **Asuransi**               | Ringkasan polis dan klaim asuransi               |
+| **LegalTech**              | Asisten hukum otomatis untuk draft kontrak       |
+| **Korporasi besar**        | Analisis massal ribuan kontrak vendor/supplier   |
+
