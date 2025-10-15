@@ -8,76 +8,55 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from google.generativeai import embed_content
 
 # ============================
-# 🎯 KONFIGURASI STREAMLIT
+# ⚙️ KONFIGURASI STREAMLIT
 # ============================
 st.set_page_config(
-    page_title="⚖️ Legal Contract Analyzer (RAG + Gemini)",
+    page_title="⚖️ Legal Contract Analyze",
     page_icon="📄",
-    layout="wide",
-    initial_sidebar_state="expanded",
+    layout="wide"
 )
 
-# === Gaya CSS Kustom ===
+# CSS custom
 st.markdown("""
 <style>
     body {
         background-color: #0d1117;
         color: #e6edf3;
-        font-family: 'Inter', sans-serif;
-    }
-    .main {
-        background-color: #0d1117;
-        color: #e6edf3;
-    }
-    h1, h2, h3, h4 {
-        color: #58a6ff;
-    }
-    .stTextArea textarea, .stTextInput input {
-        background-color: #161b22;
-        color: #f0f6fc;
-        border-radius: 8px;
-        border: 1px solid #30363d;
-    }
-    .stButton>button {
-        background: linear-gradient(90deg, #238636, #2ea043);
-        color: white;
-        border: none;
-        border-radius: 10px;
-        font-weight: bold;
-        padding: 0.6rem 1.5rem;
-    }
-    .stButton>button:hover {
-        background: linear-gradient(90deg, #2ea043, #3fb950);
     }
     .ai-box {
         background-color: #161b22;
-        border-left: 5px solid #58a6ff;
+        border-left: 4px solid #58a6ff;
         padding: 1rem;
         border-radius: 10px;
         margin-top: 1rem;
     }
-    .context-box {
+    .context-line {
         background-color: #161b22;
         border: 1px solid #30363d;
-        border-radius: 10px;
-        padding: 0.7rem;
-        margin-top: 0.5rem;
-        font-size: 0.9rem;
+        border-radius: 6px;
+        padding: 0.6rem;
+        margin: 0.4rem 0;
         color: #a9b1ba;
+        font-size: 0.9rem;
+    }
+    .highlight {
+        color: #d2a8ff;
+        font-weight: bold;
     }
 </style>
 """, unsafe_allow_html=True)
 
 # ============================
-# 🔐 KONFIGURASI API GEMINI
+# 🔐 API KEY GEMINI
 # ============================
 os.environ["GOOGLE_API_KEY"] = st.secrets.get("GEMINI_API_KEY", "")
 
+# Model Gemini
 llm = ChatGoogleGenerativeAI(
     model="models/gemini-2.0-flash",
-    temperature=0.8,           # lebih natural
-    top_p=0.9,                 # variasi gaya bahasa
-    max_output_tokens=800,     # agar bisa panjang
+    temperature=0.7,
+    top_p=0.9,
+    max_output_tokens=800,
     convert_system_message_to_human=True,
     verbose=False,
 )
@@ -89,11 +68,10 @@ def clean_text(text):
     text = re.sub(r"\*\*(.*?)\*\*", r"\1", text)
     text = re.sub(r"[*_]+", "", text)
     text = re.sub(r"\s{2,}", " ", text)
-    text = re.sub(r"\n{2,}", "\n", text)
     return text.strip()
 
 # ============================
-# 📂 LOAD ARTIFACTS
+# 📂 LOAD DATA
 # ============================
 artifact_folder = "artifacts"
 index = faiss.read_index(os.path.join(artifact_folder, "faiss.index"))
@@ -101,7 +79,7 @@ chunks_df = pd.read_parquet(os.path.join(artifact_folder, "chunks.parquet"))
 embeddings = np.load(os.path.join(artifact_folder, "embeddings.npy"))
 
 # ============================
-# 🔍 RETRIEVAL FUNCTION
+# 🔍 RETRIEVAL
 # ============================
 def retrieve_from_doc(query, file_name, top_k=5):
     doc_mask = chunks_df["filename"].str.lower() == file_name.lower()
@@ -121,23 +99,24 @@ def retrieve_from_doc(query, file_name, top_k=5):
     return [doc_chunks.iloc[i]["text"] for i in indices[0] if 0 <= i < len(doc_chunks)]
 
 # ============================
-# 💬 RAG FUNCTION
+# 🧠 ASK GEMINI RAG
 # ============================
-def ask_gemini_rag(question, context):
+def ask_gemini_rag(question, retrieved_chunks):
+    joined_context = "\n\n".join(retrieved_chunks)
     prompt = f"""
-Kamu adalah asisten hukum profesional yang menganalisis kontrak pembiayaan.
-Gunakan konteks di bawah untuk menjawab dengan akurat, ringkas, dan sopan.
+Kamu adalah asisten hukum profesional.
+Gunakan hanya konteks berikut untuk menjawab pertanyaan secara ringkas dan akurat.
 
 KONTEKS:
-{context}
+{joined_context}
 
 PERTANYAAN:
 {question}
 
 Aturan:
-- Jawab berdasarkan teks, jangan berasumsi.
-- Jika informasi tidak tersedia, katakan dengan jelas.
-- Gunakan bahasa Indonesia formal yang mudah dipahami.
+- Jawab langsung berdasarkan isi konteks.
+- Jangan buat asumsi.
+- Jika informasi tidak ada, katakan "Informasi tidak ditemukan dalam konteks."
 """
     response = llm.invoke(prompt)
     return clean_text(response.content.strip())
@@ -146,44 +125,44 @@ Aturan:
 # 🖥️ STREAMLIT UI
 # ============================
 st.title("⚖️ Legal Contract Analyzer")
-st.caption("AI Assistant untuk menganalisis isi kontrak pembiayaan menggunakan **LangChain + Gemini RAG**")
+st.caption("Analisis isi kontrak pembiayaan menggunakan Gemini + LangChain RAG")
 
+# Sidebar
 with st.sidebar:
     st.header("📁 Pengaturan Dokumen")
     available_docs = sorted(chunks_df["filename"].unique().tolist())
-    target_doc = st.selectbox("Pilih dokumen kontrak:", available_docs, index=0)
+    target_doc = st.selectbox("Pilih dokumen:", available_docs)
     top_k = st.slider("🔎 Jumlah konteks teratas", 3, 10, 5)
     st.markdown("---")
-    st.info("💡 Tips:\nGunakan pertanyaan seperti:\n- 'Siapa pihak peminjam?'\n- 'Berapa jumlah pembiayaan?'")
+    st.info("💡 Tips: Ajukan pertanyaan spesifik, misalnya:\n'Berapa jumlah pinjaman?'\n'Apa sanksi keterlambatan?'")
 
-# ============================
-# 🧠 USER INPUT
-# ============================
-user_question = st.text_area("💬 Masukkan pertanyaan Anda:", placeholder="Contoh: Apa denda jika peminjam terlambat membayar?")
+# Input pengguna
+user_question = st.text_area("💬 Masukkan pertanyaan Anda:", placeholder="Contoh: Siapa pihak peminjam dalam kontrak ini?")
 
-if st.button("🚀 Analisis Kontrak", use_container_width=True):
+if st.button("🚀 Analisis", use_container_width=True):
     if not user_question.strip():
-        st.warning("❗ Harap isi pertanyaan terlebih dahulu.")
+        st.warning("Harap isi pertanyaan terlebih dahulu.")
     else:
-        with st.spinner("Menganalisis dokumen dan memanggil Gemini..."):
-            try:
-                docs = retrieve_from_doc(user_question, target_doc, top_k=top_k)
-                if not docs:
-                    st.error("Tidak ada konteks ditemukan untuk dokumen ini.")
-                else:
-                    context_text = "\n\n".join(clean_text(d) for d in docs)
-                    answer = ask_gemini_rag(user_question, context_text)
+        with st.spinner("🔎 Mencari konteks relevan..."):
+            docs = retrieve_from_doc(user_question, target_doc, top_k=top_k)
 
-                    st.markdown("### 🧠 Jawaban Gemini")
-                    st.markdown(f"<div class='ai-box'>{answer}</div>", unsafe_allow_html=True)
+        if not docs:
+            st.error("Tidak ada konteks ditemukan untuk dokumen ini.")
+        else:
+            with st.spinner("🧠 Meminta analisis Gemini..."):
+                answer = ask_gemini_rag(user_question, docs)
 
-                    with st.expander("📜 Konteks yang digunakan"):
-                        st.markdown(f"<div class='context-box'>{context_text}</div>", unsafe_allow_html=True)
-            except Exception as e:
-                st.error(f"⚠️ Terjadi kesalahan: {e}")
+            # === Jawaban ===
+            st.markdown("### 🧠 Jawaban Gemini")
+            st.markdown(f"<div class='ai-box'>{answer}</div>", unsafe_allow_html=True)
 
-# ============================
-# ⚙️ FOOTER
-# ============================
+            # === Kalimat Sumber ===
+            st.markdown("### 📜 Kalimat Sumber dari Dokumen")
+            for i, chunk in enumerate(docs, start=1):
+                st.markdown(
+                    f"<div class='context-line'><span class='highlight'>Konteks {i}:</span> {clean_text(chunk)}</div>",
+                    unsafe_allow_html=True,
+                )
+
 st.markdown("---")
 st.caption("💼 Built by **Imam Bari Setiawan** | Powered by Gemini & LangChain 🚀")
