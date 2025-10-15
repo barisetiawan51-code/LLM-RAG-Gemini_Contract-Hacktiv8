@@ -1,0 +1,7 @@
+streamlit
+faiss-cpu
+pandas
+numpy
+langchain
+langchain-google-genai
+google-generativeai
