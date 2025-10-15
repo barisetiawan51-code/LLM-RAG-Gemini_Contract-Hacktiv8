@@ -11,12 +11,12 @@ from google.generativeai import embed_content
 # ⚙️ KONFIGURASI STREAMLIT
 # ============================
 st.set_page_config(
-    page_title="⚖️ Legal Contract Analyze",
+    page_title="⚖️ Legal Contract RAG (Gemini + LangChain)",
     page_icon="📄",
     layout="wide"
 )
 
-# CSS custom
+# 🎨 CSS kustom
 st.markdown("""
 <style>
     body {
@@ -54,7 +54,7 @@ os.environ["GOOGLE_API_KEY"] = st.secrets.get("GEMINI_API_KEY", "")
 # Model Gemini
 llm = ChatGoogleGenerativeAI(
     model="models/gemini-2.0-flash",
-    temperature=0.8,
+    temperature=0.9,
     top_p=0.9,
     max_output_tokens=800,
     convert_system_message_to_human=True,
@@ -134,11 +134,17 @@ with st.sidebar:
     target_doc = st.selectbox("Pilih dokumen:", available_docs)
     top_k = st.slider("🔎 Jumlah konteks teratas", 3, 10, 5)
     st.markdown("---")
-    st.info("💡 Tips: Ajukan pertanyaan spesifik, misalnya:\n'Berapa jumlah pinjaman?'\n'Apa sanksi keterlambatan?'")
+    st.info("💡 Tips: Ajukan pertanyaan spesifik seperti:\n Berapa jumlah pinjaman?\n Apa sanksi keterlambatan?")
 
 # Input pengguna
-user_question = st.text_area("💬 Masukkan pertanyaan Anda:", placeholder="Contoh: Siapa pihak peminjam dalam kontrak ini?")
+user_question = st.text_area(
+    "💬 Masukkan pertanyaan Anda:",
+    placeholder="Contoh: Siapa pihak peminjam dalam kontrak ini?",
+)
 
+# ============================
+# 🚀 TOMBOL ANALISIS
+# ============================
 if st.button("🚀 Analisis", use_container_width=True):
     if not user_question.strip():
         st.warning("Harap isi pertanyaan terlebih dahulu.")
@@ -152,17 +158,18 @@ if st.button("🚀 Analisis", use_container_width=True):
             with st.spinner("🧠 Meminta analisis Gemini..."):
                 answer = ask_gemini_rag(user_question, docs)
 
-            # === Jawaban ===
+            # === Jawaban Gemini ===
             st.markdown("### 🧠 Jawaban Gemini")
             st.markdown(f"<div class='ai-box'>{answer}</div>", unsafe_allow_html=True)
 
-            # === Kalimat Sumber ===
-            st.markdown("### 📜 Kalimat Sumber dari Dokumen")
-            for i, chunk in enumerate(docs, start=1):
-                st.markdown(
-                    f"<div class='context-line'><span class='highlight'>Konteks {i}:</span> {clean_text(chunk)}</div>",
-                    unsafe_allow_html=True,
-                )
+            # === Kalimat Sumber (dalam expander dropdown) ===
+            with st.expander("📜 Lihat Kalimat Sumber dari Dokumen", expanded=False):
+                for i, chunk in enumerate(docs, start=1):
+                    st.markdown(
+                        f"<div class='context-line'><span class='highlight'>Konteks {i}:</span> {clean_text(chunk)}</div>",
+                        unsafe_allow_html=True,
+                    )
 
+# Footer
 st.markdown("---")
 st.caption("💼 Built by **Imam Bari Setiawan** | Powered by Gemini & LangChain 🚀")
