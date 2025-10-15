@@ -81,8 +81,7 @@ st.sidebar.header("⚙️ Pengaturan")
 target_doc = st.sidebar.text_input("Nama Dokumen:", "Contract_4.pdf")
 top_k = st.sidebar.slider("Jumlah konteks teratas (Top K)", 3, 10, 5)
 
-user_question = st.text_area("💬 Masukkan pertanyaan Anda:", 
-                             "Siapa nama pihak peminjam dan pemberi pinjaman dalam kontrak ini?")
+user_question = st.text_area("💬 Masukkan pertanyaan Anda:")
 
 if st.button("🔍 Analisis Kontrak"):
     with st.spinner("Menganalisis dokumen..."):
