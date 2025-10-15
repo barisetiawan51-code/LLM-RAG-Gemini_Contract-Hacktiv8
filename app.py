@@ -130,11 +130,14 @@ st.caption("Analisis isi kontrak pembiayaan menggunakan Gemini + LangChain RAG")
 # Sidebar
 with st.sidebar:
     st.header("📁 Pengaturan Dokumen")
+
     available_docs = sorted(chunks_df["filename"].unique().tolist())
     target_doc = st.selectbox("Pilih dokumen:", available_docs)
     top_k = st.slider("🔎 Jumlah konteks teratas", 3, 10, 5)
+
     st.markdown("---")
-     st.markdown("""
+
+    st.markdown("""
     ### 💡 Tips Bertanya
     - Ajukan pertanyaan **spesifik dan langsung ke isi kontrak.**
     - Contoh pertanyaan:
