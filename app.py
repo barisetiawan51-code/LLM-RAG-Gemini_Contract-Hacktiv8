@@ -78,7 +78,7 @@ st.set_page_config(page_title="📄 Legal Contract RAG", page_icon="⚖️")
 st.title("📄 Legal Contract Analyzer (Gemini + LangChain RAG)")
 
 st.sidebar.header("⚙️ Pengaturan")
-target_doc = st.sidebar.text_input("Nama Dokumen:", "Contract_4.pdf")
+target_doc = st.sidebar.text_input("Nama Dokumen:")
 top_k = st.sidebar.slider("Jumlah konteks teratas (Top K)", 3, 10, 5)
 
 user_question = st.text_area("💬 Masukkan pertanyaan Anda:")
