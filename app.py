@@ -134,7 +134,15 @@ with st.sidebar:
     target_doc = st.selectbox("Pilih dokumen:", available_docs)
     top_k = st.slider("🔎 Jumlah konteks teratas", 3, 10, 5)
     st.markdown("---")
-    st.info("💡 Tips: Ajukan pertanyaan spesifik seperti:\n Berapa jumlah pinjaman?\n Apa sanksi keterlambatan?")
+     st.markdown("""
+    ### 💡 Tips Bertanya
+    - Ajukan pertanyaan **spesifik dan langsung ke isi kontrak.**
+    - Contoh pertanyaan:
+        - 🏦 *Berapa jumlah pinjaman?*  
+        - ⏰ *Apa sanksi keterlambatan pembayaran?*  
+        - 👥 *Siapa pihak yang terlibat dalam kontrak?*  
+        - 💰 *Bagaimana ketentuan bunga atau cicilan?*
+    """)
 
 # Input pengguna
 user_question = st.text_area(
