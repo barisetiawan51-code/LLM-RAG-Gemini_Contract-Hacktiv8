@@ -46,7 +46,7 @@ def retrieve_from_doc(query, file_name, top_k=5):
 
     # Gunakan embedding dari Gemini
     from google.generativeai import embed_content
-    query_emb = embed_content(model="models/embedding-004", content=query)["embedding"]
+    query_emb = embed_content(model="models/text-embedding-004", content=query)["embedding"]
     query_emb = np.array([query_emb]).astype("float32")
 
     # Pencarian FAISS
