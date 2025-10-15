@@ -54,7 +54,7 @@ os.environ["GOOGLE_API_KEY"] = st.secrets.get("GEMINI_API_KEY", "")
 # Model Gemini
 llm = ChatGoogleGenerativeAI(
     model="models/gemini-2.0-flash",
-    temperature=0.7,
+    temperature=0.8,
     top_p=0.9,
     max_output_tokens=800,
     convert_system_message_to_human=True,
