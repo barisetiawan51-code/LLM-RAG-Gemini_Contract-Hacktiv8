@@ -12,7 +12,7 @@ from google.generativeai import embed_content
 # ⚙️ KONFIGURASI DASAR STREAMLIT
 # ==============================
 st.set_page_config(
-    page_title="⚖️ Legal Contract Analyzer",
+    page_title="Legal Contract Analyzer",
     page_icon="📄",
     layout="wide"
 )
@@ -91,9 +91,9 @@ else:
 # ==============================
 llm = ChatGoogleGenerativeAI(
     model="models/gemini-2.5-flash",
-    temperature=0.7,
-    top_p=0.9,
-    max_output_tokens=800,
+    temperature=0.8,
+    top_p=0.95,
+    max_output_tokens=1000,
     convert_system_message_to_human=True,
     verbose=False,
 )
