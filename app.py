@@ -206,7 +206,9 @@ with st.sidebar:
 # 💬 INPUT
 # ==============================
 user_question = st.text_area(
-    "Masukkan pertanyaan Anda:", height=100
+    "Masukkan pertanyaan Anda:",
+    placeholder="Contoh: Apa sanksi jika peminjam terlambat membayar?",
+    height=100
 )
 
 # ==============================
