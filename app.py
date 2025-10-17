@@ -196,7 +196,7 @@ Aturan:
 # ==============================
 # 🏠 HEADER & INTRO
 # ==============================
-st.markdown("<h1 class='main-title typing'>⚖️ Legal Contract Analyzer</h1>", unsafe_allow_html=True)
+st.markdown("<h1 class='main-title'>⚖️ Legal Contract Analyzer</h1>", unsafe_allow_html=True)
 st.markdown("<p class='subtitle'>Menganalisis isi kontrak hukum menggunakan kecerdasan buatan Gemini + LangChain RAG</p>", unsafe_allow_html=True)
 
 with st.expander("ℹ️ Tentang Aplikasi", expanded=False):
