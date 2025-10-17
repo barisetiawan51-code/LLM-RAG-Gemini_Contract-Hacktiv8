@@ -93,7 +93,7 @@ os.environ["GOOGLE_API_KEY"] = GEMINI_KEY
 # ==============================
 # 📦 LOAD ARTIFACTS
 # ==============================
-artifact_folder = "/content/drive/MyDrive/Project Portofolio/LLM-RAG-Gemini-Hacktiv8/LLM_RAG_artifacts/"
+artifact_folder = "artifacts"
 index = faiss.read_index(os.path.join(artifact_folder, "faiss.index"))
 chunks_df = pd.read_parquet(os.path.join(artifact_folder, "chunks.parquet"))
 embeddings = np.load(os.path.join(artifact_folder, "embeddings.npy"))
