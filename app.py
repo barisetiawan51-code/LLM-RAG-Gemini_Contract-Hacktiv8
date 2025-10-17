@@ -4,6 +4,7 @@ import faiss
 import numpy as np
 import pandas as pd
 import streamlit as st
+from sklearn.metrics.pairwise import cosine_similarity
 from langchain_google_genai import ChatGoogleGenerativeAI
 from google.generativeai import embed_content
 
@@ -82,7 +83,11 @@ mark {
 # ==============================
 # 🔑 API KEY GEMINI
 # ==============================
-os.environ["GOOGLE_API_KEY"] = st.secrets.get("GEMINI_API_KEY", "")
+GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", "")
+if not GEMINI_KEY:
+    st.error("❌ API Key Gemini belum diset di Streamlit Secrets!")
+else:
+    os.environ["GOOGLE_API_KEY"] = GEMINI_KEY
 
 # ==============================
 # 🤖 MODEL GEMINI
@@ -104,22 +109,6 @@ def clean_text(text):
     text = re.sub(r"[*_]+", "", text)
     text = re.sub(r"\s{2,}", " ", text)
     return text.strip()
-
-# ==============================
-# ✨ HIGHLIGHT KONTEKS RELEVAN (AKURAT)
-# ==============================
-def highlight_relevant_context(text, answer):
-    """
-    Hanya menyorot kata/frasa dari jawaban yang benar-benar ada di konteks.
-    """
-    keywords = re.findall(r"\b[A-Za-z]{4,}\b", answer)
-    for kw in sorted(set(keywords), key=len, reverse=True):
-        # hanya highlight jika kata benar-benar ada di teks konteks
-        if re.search(rf"\b{re.escape(kw)}\b", text, re.IGNORECASE):
-            pattern = re.compile(rf"\b({re.escape(kw)})\b", re.IGNORECASE)
-            text = pattern.sub(r"**\1**", text)  # gunakan markdown bold
-    return text
-
 
 # ==============================
 # 📂 LOAD DATA ARTIFACT
@@ -173,6 +162,34 @@ Aturan:
     return clean_text(response.content.strip())
 
 # ==============================
+# 💡 HIGHLIGHT SEMANTIK (COSINE SIMILARITY)
+# ==============================
+def highlight_by_semantic_similarity(context_text, answer, threshold=0.65):
+    """Menyorot kalimat dalam konteks yang memiliki kemiripan makna tinggi dengan jawaban."""
+    sentences = re.split(r'(?<=[.!?]) +', context_text)
+    if not sentences:
+        return context_text
+
+    try:
+        context_embs = [
+            embed_content(model="models/text-embedding-004", content=sent)["embedding"]
+            for sent in sentences
+        ]
+        answer_emb = embed_content(model="models/text-embedding-004", content=answer)["embedding"]
+
+        sims = cosine_similarity([answer_emb], context_embs)[0]
+
+        highlighted = []
+        for sent, sim in zip(sentences, sims):
+            if sim >= threshold:
+                highlighted.append(f"<mark>{sent.strip()}</mark>")
+            else:
+                highlighted.append(sent.strip())
+        return " ".join(highlighted)
+    except Exception as e:
+        return context_text
+
+# ==============================
 # 🏠 HEADER
 # ==============================
 st.markdown("<h1 class='main-title'>⚖️ Legal Contract Analyzer</h1>", unsafe_allow_html=True)
@@ -208,32 +225,6 @@ user_question = st.text_area(
 # ==============================
 # 🚀 TOMBOL ANALISIS
 # ==============================
-
-from google.generativeai import embed_content
-from sklearn.metrics.pairwise import cosine_similarity
-
-def highlight_by_semantic_similarity(context_text, answer, threshold=0.6):
-    """
-    Menyorot kalimat dalam konteks yang memiliki kemiripan makna tinggi dengan jawaban.
-    """
-    sentences = re.split(r'(?<=[.!?]) +', context_text)
-    context_embs = [
-        embed_content(model="models/text-embedding-004", content=sent)["embedding"]
-        for sent in sentences
-    ]
-    answer_emb = embed_content(model="models/text-embedding-004", content=answer)["embedding"]
-
-    sims = cosine_similarity([answer_emb], context_embs)[0]
-
-    highlighted = []
-    for sent, sim in zip(sentences, sims):
-        if sim >= threshold:
-            highlighted.append(f"**{sent.strip()}**")  # bold untuk highlight
-        else:
-            highlighted.append(sent.strip())
-    return " ".join(highlighted)
-
-
 if st.button("🚀 Analisis Kontrak", use_container_width=True):
     if not user_question.strip():
         st.warning("⚠️ Harap isi pertanyaan terlebih dahulu.")
@@ -259,9 +250,7 @@ if st.button("🚀 Analisis Kontrak", use_container_width=True):
             combined_text = " ".join(docs)
             highlighted_md = highlight_by_semantic_similarity(clean_text(combined_text), answer)
 
-            st.markdown("> " + highlighted_md.replace("\n", "\n> "), unsafe_allow_html=False)
-
-
+            st.markdown(f"<div class='context-line'>{highlighted_md}</div>", unsafe_allow_html=True)
 
 # ==============================
 # 🦶 FOOTER
