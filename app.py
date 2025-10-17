@@ -263,6 +263,7 @@ if st.button("🚀 Analisis Kontrak", use_container_width=True):
                 answer = ask_gemini_rag(user_question, docs)
 
             # === Jawaban ===
+            st.markdown("---")
             st.markdown("### 🧩 Hasil Analisis Gemini")
             st.markdown(f"<div class='ai-box'>{answer}</div>", unsafe_allow_html=True)
 
