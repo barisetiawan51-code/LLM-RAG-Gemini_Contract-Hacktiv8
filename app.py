@@ -149,7 +149,7 @@ with st.sidebar:
 
 # Input pengguna
 user_question = st.text_area(
-    "💬 Masukkan pertanyaan Anda:",
+    "Masukkan pertanyaan Anda:",
     placeholder="Contoh: Siapa pihak peminjam dalam kontrak ini?",
 )
 
