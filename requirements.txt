@@ -2,6 +2,8 @@ streamlit
 faiss-cpu
 pandas
 numpy
+scikit-learn
 langchain
 langchain-google-genai
 google-generativeai
+cosine-similarity
