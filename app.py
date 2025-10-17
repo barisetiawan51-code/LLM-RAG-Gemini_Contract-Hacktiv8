@@ -5,11 +5,11 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 from sklearn.metrics.pairwise import cosine_similarity
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from google.generativeai import embed_content
 
 # ==============================
-# ⚙️ KONFIGURASI DASAR STREAMLIT
+# ⚙️ KONFIGURASI STREAMLIT
 # ==============================
 st.set_page_config(
     page_title="⚖️ Legal Contract Analyzer",
@@ -18,7 +18,7 @@ st.set_page_config(
 )
 
 # ==============================
-# 🎨 CSS KUSTOM UNTUK STYLING
+# 🎨 CSS TAMBAHAN UNTUK UI
 # ==============================
 st.markdown("""
 <style>
@@ -81,45 +81,37 @@ mark {
 """, unsafe_allow_html=True)
 
 # ==============================
-# 🔑 API KEY GEMINI
+# 🔑 API KEY
 # ==============================
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", "")
 if not GEMINI_KEY:
     st.error("❌ API Key Gemini belum diset di Streamlit Secrets!")
-else:
-    os.environ["GOOGLE_API_KEY"] = GEMINI_KEY
+    st.stop()
+
+os.environ["GOOGLE_API_KEY"] = GEMINI_KEY
 
 # ==============================
-# 🤖 MODEL GEMINI
+# 📦 LOAD ARTIFACTS
 # ==============================
-llm = ChatGoogleGenerativeAI(
-    model="models/gemini-2.5-flash",
-    temperature=0.9,
-    top_p=0.9,
-    max_output_tokens=800,
-    convert_system_message_to_human=True,
-    verbose=False,
-)
-
-# ==============================
-# 🧹 CLEAN TEXT
-# ==============================
-def clean_text(text):
-    text = re.sub(r"\*\*(.*?)\*\*", r"\1", text)
-    text = re.sub(r"[*_]+", "", text)
-    text = re.sub(r"\s{2,}", " ", text)
-    return text.strip()
-
-# ==============================
-# 📂 LOAD DATA ARTIFACT
-# ==============================
-artifact_folder = "artifacts"
+artifact_folder = "/content/drive/MyDrive/Project Portofolio/LLM-RAG-Gemini-Hacktiv8/LLM_RAG_artifacts/"
 index = faiss.read_index(os.path.join(artifact_folder, "faiss.index"))
 chunks_df = pd.read_parquet(os.path.join(artifact_folder, "chunks.parquet"))
 embeddings = np.load(os.path.join(artifact_folder, "embeddings.npy"))
 
 # ==============================
-# 🔍 RETRIEVAL
+# 🤖 MODEL GEMINI
+# ==============================
+llm = ChatGoogleGenerativeAI(
+    model="models/gemini-2.0-flash",
+    temperature=0.7,
+    top_p=0.9,
+    max_output_tokens=700,
+)
+
+embedding_fn = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
+
+# ==============================
+# 🔍 RETRIEVAL FUNCTION
 # ==============================
 def retrieve_from_doc(query, file_name, top_k=5):
     doc_mask = chunks_df["filename"].str.lower() == file_name.lower()
@@ -132,17 +124,25 @@ def retrieve_from_doc(query, file_name, top_k=5):
     index_doc = faiss.IndexFlatL2(doc_embeddings.shape[1])
     index_doc.add(doc_embeddings.astype("float32"))
 
-    query_emb = embed_content(model="models/text-embedding-004", content=query)["embedding"]
+    query_emb = embedding_fn.embed_query(query)
     query_emb = np.array([query_emb]).astype("float32")
 
     distances, indices = index_doc.search(query_emb, top_k)
-    return [doc_chunks.iloc[i]["text"] for i in indices[0] if 0 <= i < len(doc_chunks)]
+    results = []
+    for idx in indices[0]:
+        if 0 <= idx < len(doc_chunks):
+            row = doc_chunks.iloc[idx]
+            results.append({
+                "text": row["text"],
+                "filename": row["filename"]
+            })
+    return results
 
 # ==============================
 # 🧠 ASK GEMINI (RAG)
 # ==============================
 def ask_gemini_rag(question, retrieved_chunks):
-    joined_context = "\n\n".join(retrieved_chunks)
+    joined_context = "\n\n".join([r["text"] for r in retrieved_chunks])
     prompt = f"""
 Kamu adalah asisten hukum profesional.
 Gunakan hanya konteks berikut untuk menjawab pertanyaan secara ringkas dan akurat.
@@ -155,17 +155,17 @@ PERTANYAAN:
 
 Aturan:
 - Jawab langsung berdasarkan isi konteks.
-- Jangan buat asumsi.
-- Jika informasi tidak ada, katakan "Informasi tidak ditemukan dalam konteks."
+- Jangan tulis 'Berdasarkan konteks'.
+- Jika informasi tidak ditemukan, jawab: "Informasi tidak ditemukan dalam konteks."
 """
     response = llm.invoke(prompt)
-    return clean_text(response.content.strip())
+    return response.content.strip()
 
 # ==============================
-# 💡 HIGHLIGHT SEMANTIK (COSINE SIMILARITY)
+# 💡 HIGHLIGHT SEMANTIK
 # ==============================
 def highlight_by_semantic_similarity(context_text, answer, threshold=0.65):
-    """Menyorot kalimat dalam konteks yang memiliki kemiripan makna tinggi dengan jawaban."""
+    """Menyorot bagian konteks yang paling semantik mirip dengan jawaban."""
     sentences = re.split(r'(?<=[.!?]) +', context_text)
     if not sentences:
         return context_text
@@ -186,14 +186,14 @@ def highlight_by_semantic_similarity(context_text, answer, threshold=0.65):
             else:
                 highlighted.append(sent.strip())
         return " ".join(highlighted)
-    except Exception as e:
+    except Exception:
         return context_text
 
 # ==============================
 # 🏠 HEADER
 # ==============================
 st.markdown("<h1 class='main-title'>⚖️ Legal Contract Analyzer</h1>", unsafe_allow_html=True)
-st.markdown("<p class='subtitle'>Menganalisis isi kontrak hukum menggunakan Gemini + LangChain RAG</p>", unsafe_allow_html=True)
+st.markdown("<p class='subtitle'>Analisis isi kontrak hukum dengan Gemini RAG dan Highlight Kontekstual</p>", unsafe_allow_html=True)
 
 # ==============================
 # 🧱 SIDEBAR
@@ -205,51 +205,48 @@ with st.sidebar:
     top_k = st.slider("🔎 Jumlah konteks teratas", 3, 10, 5)
     st.markdown("---")
     st.markdown("""
-    ### 💡 Tips Bertanya
-    - Gunakan kalimat **jelas & spesifik**
-    - Contoh:
-        - 🏦 Berapa jumlah pinjaman?
-        - 👥 Siapa pihak yang terlibat?
-        - ⏰ Apa sanksi keterlambatan pembayaran?
+    ### 💡 Contoh Pertanyaan
+    - Siapa pihak peminjam?
+    - Apa sanksi jika terjadi keterlambatan?
+    - Berapa jumlah pinjaman?
     """)
 
 # ==============================
-# 💬 INPUT
+# 💬 INPUT USER
 # ==============================
 user_question = st.text_area(
     "Masukkan pertanyaan Anda:",
-    placeholder="Contoh: Apa sanksi jika peminjam terlambat membayar?",
+    placeholder="Contoh: Siapa pihak peminjam?",
     height=120
 )
 
 # ==============================
-# 🚀 TOMBOL ANALISIS
+# 🚀 PROSES ANALISIS
 # ==============================
 if st.button("🚀 Analisis Kontrak", use_container_width=True):
     if not user_question.strip():
         st.warning("⚠️ Harap isi pertanyaan terlebih dahulu.")
     else:
-        with st.spinner("🔎 Mencari konteks relevan..."):
-            docs = retrieve_from_doc(user_question, target_doc, top_k=top_k)
+        with st.spinner("🔎 Mengambil konteks relevan..."):
+            retrieved = retrieve_from_doc(user_question, target_doc, top_k=top_k)
 
-        if not docs:
-            st.error("❌ Tidak ada konteks ditemukan untuk dokumen ini.")
+        if not retrieved:
+            st.error("❌ Tidak ada konteks relevan ditemukan.")
         else:
-            with st.spinner("🧠 Menganalisis dengan Gemini..."):
-                answer = ask_gemini_rag(user_question, docs)
+            with st.spinner("🤖 Menganalisis dengan Gemini..."):
+                answer = ask_gemini_rag(user_question, retrieved)
 
             # === Jawaban ===
             st.markdown("---")
             st.markdown("### 🧩 Hasil Analisis Gemini")
             st.markdown(f"<div class='ai-box'>{answer}</div>", unsafe_allow_html=True)
 
-            # === Sumber konteks ===
+            # === Konteks ===
             st.markdown("### 📚 Sumber Konteks dari Dokumen")
             st.markdown(f"**📄 Dokumen:** *{target_doc}*")
 
-            combined_text = " ".join(docs)
-            highlighted_md = highlight_by_semantic_similarity(clean_text(combined_text), answer)
-
+            combined_text = " ".join([r["text"] for r in retrieved])
+            highlighted_md = highlight_by_semantic_similarity(combined_text, answer)
             st.markdown(f"<div class='context-line'>{highlighted_md}</div>", unsafe_allow_html=True)
 
 # ==============================
