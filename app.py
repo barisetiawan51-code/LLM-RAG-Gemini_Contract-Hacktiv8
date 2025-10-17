@@ -239,7 +239,7 @@ with st.sidebar:
 # ==============================
 # 💬 INPUT
 # ==============================
-user_question = st.text_input(
+user_question = st.text_area(
     "Masukkan pertanyaan Anda:",
     placeholder="Contoh: Siapa pihak peminjam dalam kontrak ini?",
     height=120
