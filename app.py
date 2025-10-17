@@ -208,6 +208,32 @@ user_question = st.text_area(
 # ==============================
 # 🚀 TOMBOL ANALISIS
 # ==============================
+
+from google.generativeai import embed_content
+from sklearn.metrics.pairwise import cosine_similarity
+
+def highlight_by_semantic_similarity(context_text, answer, threshold=0.6):
+    """
+    Menyorot kalimat dalam konteks yang memiliki kemiripan makna tinggi dengan jawaban.
+    """
+    sentences = re.split(r'(?<=[.!?]) +', context_text)
+    context_embs = [
+        embed_content(model="models/text-embedding-004", content=sent)["embedding"]
+        for sent in sentences
+    ]
+    answer_emb = embed_content(model="models/text-embedding-004", content=answer)["embedding"]
+
+    sims = cosine_similarity([answer_emb], context_embs)[0]
+
+    highlighted = []
+    for sent, sim in zip(sentences, sims):
+        if sim >= threshold:
+            highlighted.append(f"**{sent.strip()}**")  # bold untuk highlight
+        else:
+            highlighted.append(sent.strip())
+    return " ".join(highlighted)
+
+
 if st.button("🚀 Analisis Kontrak", use_container_width=True):
     if not user_question.strip():
         st.warning("⚠️ Harap isi pertanyaan terlebih dahulu.")
@@ -230,10 +256,11 @@ if st.button("🚀 Analisis Kontrak", use_container_width=True):
             st.markdown("### 📚 Sumber Konteks dari Dokumen")
             st.markdown(f"**📄 Dokumen:** *{target_doc}*")
 
-            combined_text = " ... ".join(docs)
-            highlighted_md = highlight_relevant_context(clean_text(combined_text), answer)
+            combined_text = " ".join(docs)
+            highlighted_md = highlight_by_semantic_similarity(clean_text(combined_text), answer)
 
             st.markdown("> " + highlighted_md.replace("\n", "\n> "), unsafe_allow_html=False)
+
 
 
 # ==============================
