@@ -173,7 +173,25 @@ def highlight_context(context_text, answer_text):
 # 🏠 HEADER
 # ==============================
 st.markdown("<h1 class='main-title'>⚖️ Legal Contract Analyzer</h1>", unsafe_allow_html=True)
-st.markdown("<p class='subtitle'>Analisis otomatis kontrak hukum dengan RAG + Gemini AI</p>", unsafe_allow_html=True)
+st.markdown("<p class='subtitle'>Analisis otomatis isi kontrak hukum dengan kecerdasan buatan Gemini & LangChain</p>", unsafe_allow_html=True)
+
+with st.expander("ℹ️ Tentang Aplikasi", expanded=True):
+    st.markdown("""
+    Aplikasi ini dirancang untuk membantu **analisis kontrak hukum atau perjanjian pembiayaan** 
+    menggunakan pendekatan **Retrieval-Augmented Generation (RAG)**.
+
+    🔍 **Cara kerja singkat:**
+    1. Sistem mencari potongan teks paling relevan dari dokumen kontrak.
+    2. Model **Gemini AI** kemudian menjawab pertanyaan Anda **berdasarkan konteks dokumen** — bukan asumsi.
+    3. Hasil analisis disertai **sumber teks asli** agar transparan dan mudah diverifikasi.
+    
+    💬 Contoh pertanyaan:
+    - *Siapa pihak yang terlibat dalam kontrak?*  
+    - *Berapa jumlah pinjaman dan tenor pembayaran?*  
+    - *Apa ketentuan denda keterlambatan?*
+    """)
+
+st.markdown("---")
 
 # ==============================
 # 🧱 SIDEBAR
@@ -184,31 +202,11 @@ with st.sidebar:
     target_doc = st.selectbox("Pilih dokumen:", available_docs)
     top_k = st.slider("🔎 Jumlah konteks teratas", 3, 10, 5)
 
-    st.markdown("---")
-    st.subheader("ℹ️ Tentang Aplikasi")
-    st.markdown("""
-    **Legal Contract Analyzer** membantu Anda:
-    - Menemukan informasi penting dari kontrak hukum 📄  
-    - Menganalisis isi dokumen secara cerdas dengan **Gemini AI**  
-    - Menggunakan metode **RAG (Retrieval Augmented Generation)** agar hasil tetap akurat  
-    """)
-
-    st.markdown("---")
-    st.caption("💡 Tips Bertanya:")
-    st.markdown("""
-    - Gunakan pertanyaan spesifik seperti:
-      - 💰 *Berapa jumlah pinjaman?*  
-      - 👥 *Siapa pihak yang terlibat?*  
-      - ⏰ *Apa sanksi jika terlambat membayar?*
-    """)
-
 # ==============================
 # 💬 INPUT
 # ==============================
 user_question = st.text_area(
-    "Masukkan pertanyaan Anda:",
-    placeholder="Contoh: Apa sanksi jika peminjam terlambat membayar?",
-    height=120
+    "Masukkan pertanyaan Anda:", height=100
 )
 
 # ==============================
