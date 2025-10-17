@@ -106,17 +106,20 @@ def clean_text(text):
     return text.strip()
 
 # ==============================
-# ✨ HIGHLIGHT KONTEKS RELEVAN
+# ✨ HIGHLIGHT KONTEKS RELEVAN (AKURAT)
 # ==============================
 def highlight_relevant_context(text, answer):
+    """
+    Hanya menyorot kata/frasa dari jawaban yang benar-benar ada di konteks.
+    """
     keywords = re.findall(r"\b[A-Za-z]{4,}\b", answer)
-    for kw in set(keywords):
-        pattern = re.compile(re.escape(kw), re.IGNORECASE)
-        text = pattern.sub(
-            lambda m: f"<mark>{m.group(0)}</mark>",
-            text
-        )
+    for kw in sorted(set(keywords), key=len, reverse=True):
+        # hanya highlight jika kata benar-benar ada di teks konteks
+        if re.search(rf"\b{re.escape(kw)}\b", text, re.IGNORECASE):
+            pattern = re.compile(rf"\b({re.escape(kw)})\b", re.IGNORECASE)
+            text = pattern.sub(r"**\1**", text)  # gunakan markdown bold
     return text
+
 
 # ==============================
 # 📂 LOAD DATA ARTIFACT
@@ -228,8 +231,10 @@ if st.button("🚀 Analisis Kontrak", use_container_width=True):
             st.markdown(f"**📄 Dokumen:** *{target_doc}*")
 
             combined_text = " ... ".join(docs)
-            highlighted = highlight_relevant_context(clean_text(combined_text), answer)
-            st.markdown(f"<div class='context-line'>{highlighted}</div>", unsafe_allow_html=True)
+            highlighted_md = highlight_relevant_context(clean_text(combined_text), answer)
+
+            st.markdown("> " + highlighted_md.replace("\n", "\n> "), unsafe_allow_html=False)
+
 
 # ==============================
 # 🦶 FOOTER
