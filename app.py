@@ -7,16 +7,14 @@ import streamlit as st
 from langchain_google_genai import ChatGoogleGenerativeAI
 from google.generativeai import embed_content
 
-# ============================
-# ⚙️ KONFIGURASI STREAMLIT
-# ============================
+# KONFIGURASI STREAMLIT
 st.set_page_config(
     page_title="Legal Contract Analyzer",
     page_icon="📄",
     layout="wide"
 )
 
-# 🎨 CSS kustom
+# CSS kustom
 st.markdown("""
 <style>
     body {
@@ -46,9 +44,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ============================
-# 🔐 API KEY GEMINI
-# ============================
+# API KEY GEMINI
 os.environ["GOOGLE_API_KEY"] = st.secrets.get("GEMINI_API_KEY", "")
 
 # Model Gemini
@@ -61,26 +57,21 @@ llm = ChatGoogleGenerativeAI(
     verbose=False,
 )
 
-# ============================
-# 🧹 CLEAN TEXT
-# ============================
+# CLEAN TEXT
 def clean_text(text):
     text = re.sub(r"\*\*(.*?)\*\*", r"\1", text)
     text = re.sub(r"[*_]+", "", text)
     text = re.sub(r"\s{2,}", " ", text)
     return text.strip()
 
-# ============================
-# 📂 LOAD DATA
-# ============================
+
+# LOAD DATA
 artifact_folder = "artifacts"
 index = faiss.read_index(os.path.join(artifact_folder, "faiss.index"))
 chunks_df = pd.read_parquet(os.path.join(artifact_folder, "chunks.parquet"))
 embeddings = np.load(os.path.join(artifact_folder, "embeddings.npy"))
 
-# ============================
-# 🔍 RETRIEVAL
-# ============================
+# RETRIEVAL
 def retrieve_from_doc(query, file_name, top_k=5):
     doc_mask = chunks_df["filename"].str.lower() == file_name.lower()
     doc_chunks = chunks_df[doc_mask].reset_index(drop=True)
@@ -98,9 +89,7 @@ def retrieve_from_doc(query, file_name, top_k=5):
     distances, indices = index_doc.search(query_emb, top_k)
     return [doc_chunks.iloc[i]["text"] for i in indices[0] if 0 <= i < len(doc_chunks)]
 
-# ============================
-# 🧠 ASK GEMINI RAG
-# ============================
+# ASK GEMINI RAG
 def ask_gemini_rag(question, retrieved_chunks):
     joined_context = "\n\n".join(retrieved_chunks)
     prompt = f"""
@@ -121,9 +110,7 @@ Aturan:
     response = llm.invoke(prompt)
     return clean_text(response.content.strip())
 
-# ============================
-# 🖥️ STREAMLIT UI
-# ============================
+# STREAMLIT UI
 st.title("⚖️ Legal Contract Analyzer")
 st.caption("Analisis isi kontrak pembiayaan menggunakan Gemini + LangChain RAG")
 
@@ -153,9 +140,7 @@ user_question = st.text_area(
     placeholder="Contoh: Siapa pihak peminjam dalam kontrak ini?",
 )
 
-# ============================
-# 🚀 TOMBOL ANALISIS
-# ============================
+# TOMBOL ANALISIS
 if st.button("🚀 Analisis", use_container_width=True):
     if not user_question.strip():
         st.warning("Harap isi pertanyaan terlebih dahulu.")
