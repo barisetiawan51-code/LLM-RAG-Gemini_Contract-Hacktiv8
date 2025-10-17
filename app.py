@@ -102,8 +102,8 @@ embeddings = np.load(os.path.join(artifact_folder, "embeddings.npy"))
 # 🤖 MODEL GEMINI
 # ==============================
 llm = ChatGoogleGenerativeAI(
-    model="models/gemini-2.0-flash",
-    temperature=0.7,
+    model="models/gemini-2.5-flash",
+    temperature=0.9,
     top_p=0.9,
     max_output_tokens=700,
 )
