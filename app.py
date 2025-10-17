@@ -162,13 +162,24 @@ Aturan:
 # ✨ HIGHLIGHT KONTEKS
 # ==============================
 def highlight_context(context_text, answer_text):
-    keywords = re.findall(r"\$?\d[\d,\.]*|\b[A-Z][a-z]+\b", answer_text)
+    """Menyorot kata kunci penting dari jawaban dalam konteks."""
+    # Tangkap angka, kata kapital, dan nama umum
+    keywords = re.findall(
+        r"\$?\d[\d,\.]*|[A-Z]{2,}(?:\s[A-Z]{2,})*|\b[A-Z][a-z]+\b",
+        answer_text
+    )
+
+    # Hilangkan duplikat dan urutkan berdasarkan panjang agar tidak tumpang tindih
     keywords = sorted(set(keywords), key=len, reverse=True)
+
     highlighted = context_text
     for kw in keywords:
         pattern = re.escape(kw)
         highlighted = re.sub(
-            pattern, f"<mark>{kw}</mark>", highlighted, flags=re.IGNORECASE
+            pattern,
+            f"<mark>{kw}</mark>",
+            highlighted,
+            flags=re.IGNORECASE,
         )
     return highlighted
 
