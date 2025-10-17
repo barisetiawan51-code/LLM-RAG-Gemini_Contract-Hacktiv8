@@ -4,6 +4,7 @@ import faiss
 import numpy as np
 import pandas as pd
 import streamlit as st
+from sklearn.metrics.pairwise import cosine_similarity
 from langchain_google_genai import ChatGoogleGenerativeAI
 from google.generativeai import embed_content
 
@@ -80,13 +81,9 @@ st.markdown("""
     font-size: 0.95rem;
 }
 .highlight {
-    color: #d2a8ff;
-    font-weight: 600;
-}
-
-mark {
     background-color: #58a6ff33;
-    color: #fff;
+    color: #ffffff;
+    font-weight: 600;
     padding: 2px 4px;
     border-radius: 4px;
 }
@@ -112,33 +109,19 @@ os.environ["GOOGLE_API_KEY"] = st.secrets.get("GEMINI_API_KEY", "")
 # ==============================
 llm = ChatGoogleGenerativeAI(
     model="models/gemini-2.5-flash",
-    temperature=0.9,
+    temperature=0.7,
     top_p=0.9,
     max_output_tokens=800,
     convert_system_message_to_human=True,
-    verbose=False,
 )
 
 # ==============================
 # 🧹 CLEAN TEXT
 # ==============================
 def clean_text(text):
-    text = re.sub(r"\*\*(.*?)\*\*", r"\1", text)
     text = re.sub(r"[*_]+", "", text)
     text = re.sub(r"\s{2,}", " ", text)
     return text.strip()
-
-# ==============================
-# ✨ HIGHLIGHT KATA KUNCI
-# ==============================
-def highlight_keywords(text, keywords):
-    for kw in keywords:
-        text = re.sub(
-            rf"(?i)({re.escape(kw)})",
-            r"<mark>\\1</mark>",
-            text
-        )
-    return text
 
 # ==============================
 # 📂 LOAD DATA
@@ -166,65 +149,62 @@ def retrieve_from_doc(query, file_name, top_k=5):
     query_emb = np.array([query_emb]).astype("float32")
 
     distances, indices = index_doc.search(query_emb, top_k)
-    results = []
-    for i in range(top_k):
-        idx = indices[0][i]
-        if 0 <= idx < len(doc_chunks):
-            results.append({
-                "text": doc_chunks.iloc[idx]["text"],
-                "index": int(idx),
-                "distance": float(distances[0][i])
-            })
-    return results
+    return [doc_chunks.iloc[i]["text"] for i in indices[0] if 0 <= i < len(doc_chunks)]
 
 # ==============================
 # 🧠 ASK GEMINI (RAG)
 # ==============================
 def ask_gemini_rag(question, retrieved_chunks):
-    context_with_refs = "\n\n".join(
-        [f"[Konteks {i+1}]\n{c['text']}" for i, c in enumerate(retrieved_chunks)]
-    )
-
+    joined_context = "\n\n".join(retrieved_chunks)
     prompt = f"""
 Kamu adalah asisten hukum profesional.
-Jawab pertanyaan pengguna **berdasarkan konteks berikut**.
-Sertakan nomor [Konteks X] ketika relevan agar pengguna tahu sumber jawabannya.
+Jawab pertanyaan di bawah ini secara ringkas, akurat, dan sopan, berdasarkan isi dokumen kontrak berikut.
 
 KONTEKS:
-{context_with_refs}
+{joined_context}
 
 PERTANYAAN:
 {question}
 
 Aturan:
-- Gunakan referensi [Konteks X] di akhir kalimat yang relevan.
-- Jangan buat asumsi di luar konteks.
-- Jika informasi tidak ditemukan, jawab: "Informasi tidak ditemukan dalam konteks."
+- Jawab hanya berdasarkan isi dokumen.
+- Jangan buat asumsi.
+- Jika tidak ada informasi yang relevan, tulis "Informasi tidak ditemukan dalam konteks."
 """
     response = llm.invoke(prompt)
     return clean_text(response.content.strip())
 
 # ==============================
-# 🏠 HEADER & INTRO
+# 🪄 HIGHLIGHT OTOMATIS KONTEKS RELEVAN
+# ==============================
+def highlight_relevant_parts(answer, chunks):
+    """
+    Mencari potongan dokumen yang paling mirip dengan jawaban Gemini
+    dan memberikan highlight pada bagian itu.
+    """
+    if not answer or not chunks:
+        return []
+
+    # Dapatkan embedding jawaban & setiap chunk
+    ans_emb = np.array(embed_content(model="models/text-embedding-004", content=answer)["embedding"]).reshape(1, -1)
+    chunk_embs = np.array([embed_content(model="models/text-embedding-004", content=c)["embedding"] for c in chunks])
+    sims = cosine_similarity(ans_emb, chunk_embs)[0]
+
+    # Pilih top-3 bagian paling relevan
+    top_idx = np.argsort(sims)[-3:][::-1]
+    highlighted_chunks = []
+    for i, c in enumerate(chunks):
+        if i in top_idx:
+            highlighted_chunks.append(f"<div class='context-line'><span class='highlight'>{clean_text(c)}</span></div>")
+        else:
+            highlighted_chunks.append(f"<div class='context-line'>{clean_text(c)}</div>")
+    return highlighted_chunks
+
+# ==============================
+# 🏠 HEADER
 # ==============================
 st.markdown("<h1 class='main-title'>⚖️ Legal Contract Analyzer</h1>", unsafe_allow_html=True)
 st.markdown("<p class='subtitle'>Menganalisis isi kontrak hukum menggunakan Gemini + LangChain RAG</p>", unsafe_allow_html=True)
-
-with st.expander("ℹ️ Tentang Aplikasi", expanded=False):
-    st.markdown("""
-    Aplikasi ini membantu menganalisis **kontrak hukum atau perjanjian pembiayaan**
-    menggunakan pendekatan **Retrieval-Augmented Generation (RAG)**.
-
-    **Cara kerja:**
-    1. Sistem mencari bagian dokumen yang paling relevan.
-    2. Gemini menjawab berdasarkan isi asli dokumen.
-    3. Hasil disertai **referensi ke teks sumber** agar transparan.
-
-    💬 *Contoh pertanyaan:*
-    - Siapa pihak yang terlibat dalam kontrak?
-    - Apa ketentuan bunga atau denda keterlambatan?
-    - Bagaimana jadwal pembayaran dilakukan?
-    """)
 
 st.markdown("---")
 
@@ -237,16 +217,6 @@ with st.sidebar:
     target_doc = st.selectbox("Pilih dokumen:", available_docs)
     top_k = st.slider("🔎 Jumlah konteks teratas", 3, 10, 5)
 
-    st.markdown("---")
-    st.markdown("""
-    ### 💡 Tips Bertanya
-    - Gunakan kalimat **jelas & spesifik**
-    - Contoh:
-        - 🏦 Berapa jumlah pinjaman?
-        - 👥 Siapa pihak yang terlibat?
-        - ⏰ Apa sanksi keterlambatan pembayaran?
-    """)
-
 # ==============================
 # 💬 INPUT
 # ==============================
@@ -257,7 +227,7 @@ user_question = st.text_area(
 )
 
 # ==============================
-# 🚀 TOMBOL ANALISIS
+# 🚀 ANALISIS
 # ==============================
 if st.button("🚀 Analisis Kontrak", use_container_width=True):
     if not user_question.strip():
@@ -272,20 +242,14 @@ if st.button("🚀 Analisis Kontrak", use_container_width=True):
             with st.spinner("🧠 Menganalisis dengan Gemini..."):
                 answer = ask_gemini_rag(user_question, docs)
 
-            # === Jawaban ===
             st.markdown("---")
             st.markdown("### 🧩 Hasil Analisis Gemini")
             st.markdown(f"<div class='ai-box'>{answer}</div>", unsafe_allow_html=True)
 
-            # === Konteks Terkait ===
-            st.markdown("### 📚 Sumber Konteks dari Dokumen")
-            keywords = user_question.lower().split()
-            for i, ctx in enumerate(docs, start=1):
-                highlighted = highlight_keywords(clean_text(ctx['text']), keywords)
-                st.markdown(
-                    f"<div class='context-line'><span class='highlight'>Konteks {i}:</span> {highlighted}</div>",
-                    unsafe_allow_html=True,
-                )
+            # Highlight otomatis bagian konteks yang mirip dengan jawaban
+            st.markdown("### 📜 Sumber Konteks dari Dokumen")
+            for chunk_html in highlight_relevant_parts(answer, docs):
+                st.markdown(chunk_html, unsafe_allow_html=True)
 
 # ==============================
 # 🦶 FOOTER
