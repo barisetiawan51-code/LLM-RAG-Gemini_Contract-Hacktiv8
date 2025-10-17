@@ -175,7 +175,7 @@ def highlight_context(context_text, answer_text):
 st.markdown("<h1 class='main-title'>⚖️ Legal Contract Analyzer</h1>", unsafe_allow_html=True)
 st.markdown("<p class='subtitle'>Analisis otomatis isi kontrak hukum dengan kecerdasan buatan Gemini & LangChain</p>", unsafe_allow_html=True)
 
-with st.expander("ℹ️ Tentang Aplikasi", expanded=True):
+with st.expander("ℹ️ Tentang Aplikasi"):
     st.markdown("""
     Aplikasi ini dirancang untuk membantu **analisis kontrak hukum atau perjanjian pembiayaan** 
     menggunakan pendekatan **Retrieval-Augmented Generation (RAG)**.
