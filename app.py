@@ -111,7 +111,7 @@ Aturan:
     return clean_text(response.content.strip())
 
 # STREAMLIT UI
-st.title("⚖️ Legal Contract Analyzera")
+st.title("⚖️ Legal Contract Analyzer")
 st.caption("Analisis isi kontrak pembiayaan menggunakan Gemini + LangChain RAG")
 
 # Sidebar
