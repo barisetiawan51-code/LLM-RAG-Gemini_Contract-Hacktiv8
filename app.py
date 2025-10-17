@@ -23,18 +23,12 @@ st.set_page_config(
 st.markdown("""
 <style>
 [data-testid="stAppViewContainer"] {
-    background: radial-gradient(circle at top left, #0d1117, #0a0f14);
-    background-size: 400% 400%;
-    animation: gradient 12s ease infinite;
-}
-@keyframes gradient {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    background: linear-gradient(145deg, #0d1117, #0a0f14);
+    color: #e6edf3;
 }
 .main-title {
     text-align: center;
-    font-size: 2.5rem;
+    font-size: 2.7rem;
     color: #58a6ff;
     font-weight: 700;
 }
@@ -45,20 +39,20 @@ st.markdown("""
     margin-bottom: 2rem;
 }
 .ai-box {
-    background: linear-gradient(145deg, #1e2530, #0f141a);
+    background: rgba(30, 40, 55, 0.9);
     border-left: 4px solid #58a6ff;
     padding: 1rem 1.3rem;
     border-radius: 12px;
     margin-top: 1rem;
     font-size: 1.05rem;
     line-height: 1.6;
+    box-shadow: 0 0 10px rgba(88,166,255,0.2);
 }
-.context-line {
+.context-box {
     background: #161b22;
     border: 1px solid #30363d;
     border-radius: 10px;
-    padding: 0.8rem;
-    margin: 0.6rem 0;
+    padding: 0.9rem;
     color: #a9b1ba;
     font-size: 0.95rem;
     line-height: 1.6;
@@ -94,7 +88,7 @@ else:
 # ==============================
 llm = ChatGoogleGenerativeAI(
     model="models/gemini-2.5-flash",
-    temperature=0.9,
+    temperature=0.7,
     top_p=0.9,
     max_output_tokens=800,
     convert_system_message_to_human=True,
@@ -162,20 +156,16 @@ Aturan:
     return clean_text(response.content.strip())
 
 # ==============================
-# ✨ HIGHLIGHT DARI JAWABAN
+# ✨ HIGHLIGHT KONTEKS
 # ==============================
 def highlight_context(context_text, answer_text):
-    """Menyorot kata kunci penting dari jawaban dalam konteks."""
     keywords = re.findall(r"\$?\d[\d,\.]*|\b[A-Z][a-z]+\b", answer_text)
     keywords = sorted(set(keywords), key=len, reverse=True)
     highlighted = context_text
     for kw in keywords:
         pattern = re.escape(kw)
         highlighted = re.sub(
-            pattern,
-            f"<mark>{kw}</mark>",
-            highlighted,
-            flags=re.IGNORECASE,
+            pattern, f"<mark>{kw}</mark>", highlighted, flags=re.IGNORECASE
         )
     return highlighted
 
@@ -183,7 +173,7 @@ def highlight_context(context_text, answer_text):
 # 🏠 HEADER
 # ==============================
 st.markdown("<h1 class='main-title'>⚖️ Legal Contract Analyzer</h1>", unsafe_allow_html=True)
-st.markdown("<p class='subtitle'>Menganalisis isi kontrak hukum menggunakan Gemini + LangChain RAG</p>", unsafe_allow_html=True)
+st.markdown("<p class='subtitle'>Analisis otomatis kontrak hukum dengan RAG + Gemini AI</p>", unsafe_allow_html=True)
 
 # ==============================
 # 🧱 SIDEBAR
@@ -193,14 +183,23 @@ with st.sidebar:
     available_docs = sorted(chunks_df["filename"].unique().tolist())
     target_doc = st.selectbox("Pilih dokumen:", available_docs)
     top_k = st.slider("🔎 Jumlah konteks teratas", 3, 10, 5)
+
     st.markdown("---")
+    st.subheader("ℹ️ Tentang Aplikasi")
     st.markdown("""
-    ### 💡 Tips Bertanya
-    - Gunakan kalimat **jelas & spesifik**
-    - Contoh:
-        - 🏦 Berapa jumlah pinjaman?
-        - 👥 Siapa pihak yang terlibat?
-        - ⏰ Apa sanksi keterlambatan pembayaran?
+    **Legal Contract Analyzer** membantu Anda:
+    - Menemukan informasi penting dari kontrak hukum 📄  
+    - Menganalisis isi dokumen secara cerdas dengan **Gemini AI**  
+    - Menggunakan metode **RAG (Retrieval Augmented Generation)** agar hasil tetap akurat  
+    """)
+
+    st.markdown("---")
+    st.caption("💡 Tips Bertanya:")
+    st.markdown("""
+    - Gunakan pertanyaan spesifik seperti:
+      - 💰 *Berapa jumlah pinjaman?*  
+      - 👥 *Siapa pihak yang terlibat?*  
+      - ⏰ *Apa sanksi jika terlambat membayar?*
     """)
 
 # ==============================
@@ -233,14 +232,12 @@ if st.button("🚀 Analisis Kontrak", use_container_width=True):
             st.markdown("### 🧩 Hasil Analisis Gemini")
             st.markdown(f"<div class='ai-box'>{answer}</div>", unsafe_allow_html=True)
 
-            # === Sumber konteks ===
-            st.markdown("### 📚 Sumber Konteks dari Dokumen")
-            st.markdown(f"**📄 Dokumen:** *{target_doc}*")
-
-            combined_text = " ".join(docs)
-            highlighted_md = highlight_context(clean_text(combined_text), answer)
-
-            st.markdown(f"<div class='context-line'>{highlighted_md}</div>", unsafe_allow_html=True)
+            # === Sumber konteks (dropdown collapsible) ===
+            with st.expander("📚 Lihat Sumber Konteks dari Dokumen"):
+                st.markdown(f"**📄 Dokumen:** *{target_doc}*")
+                combined_text = " ".join(docs)
+                highlighted_md = highlight_context(clean_text(combined_text), answer)
+                st.markdown(f"<div class='context-box'>{highlighted_md}</div>", unsafe_allow_html=True)
 
 # ==============================
 # 🦶 FOOTER
