@@ -26,6 +26,9 @@ st.markdown("""
     background: linear-gradient(145deg, #0d1117, #0a0f14);
     color: #e6edf3;
 }
+.main > div {
+        padding-top: 0rem !important;
+}           
 .main-title {
     text-align: center;
     font-size: 2.7rem;
