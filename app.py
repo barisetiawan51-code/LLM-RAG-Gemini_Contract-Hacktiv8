@@ -11,7 +11,7 @@ from google.generativeai import embed_content
 # ⚙️ KONFIGURASI STREAMLIT
 # ============================
 st.set_page_config(
-    page_title="⚖️ Legal Contract RAG (Gemini + LangChain)",
+    page_title="Legal Contract RAG (Gemini + LangChain)",
     page_icon="📄",
     layout="wide"
 )
