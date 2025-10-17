@@ -17,11 +17,10 @@ st.set_page_config(
 )
 
 # ==============================
-# 🎨 CSS KUSTOM UNTUK STYLING
+# 🎨 CSS KUSTOM UNTUK TAMPILAN
 # ==============================
 st.markdown("""
 <style>
-/* 🌈 Background animasi */
 [data-testid="stAppViewContainer"] {
     background: radial-gradient(circle at top left, #0d1117, #0a0f14);
     animation: gradient 10s ease infinite;
@@ -33,10 +32,9 @@ st.markdown("""
     100% { background-position: 0% 50%; }
 }
 
-/* ✨ Heading */
 .main-title {
     text-align: center;
-    font-size: 2.5rem;
+    font-size: 2.6rem;
     color: #58a6ff;
     font-weight: 700;
     margin-top: 0.5rem;
@@ -48,7 +46,6 @@ st.markdown("""
     margin-bottom: 2rem;
 }
 
-/* 💬 Card Style */
 .card {
     background-color: #161b22;
     border: 1px solid #30363d;
@@ -58,7 +55,6 @@ st.markdown("""
     margin-bottom: 1.5rem;
 }
 
-/* 💡 AI Answer Box */
 .ai-box {
     background: linear-gradient(145deg, #1e2530, #0f141a);
     border-left: 4px solid #58a6ff;
@@ -74,7 +70,6 @@ st.markdown("""
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* 📄 Konteks Card */
 .context-line {
     background: #161b22;
     border: 1px solid #30363d;
@@ -89,7 +84,13 @@ st.markdown("""
     font-weight: 600;
 }
 
-/* 🦶 Footer */
+mark {
+    background-color: #58a6ff33;
+    color: #fff;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
 .footer {
     text-align: center;
     margin-top: 3rem;
@@ -97,21 +98,6 @@ st.markdown("""
     border-top: 1px solid #30363d;
     color: #8b949e;
     font-size: 0.85rem;
-}
-
-/* ✍️ Typing animation effect */
-.typing {
-    overflow: hidden;
-    white-space: nowrap;
-    border-right: 3px solid #58a6ff;
-    animation: typing 3s steps(40, end), blink 0.75s step-end infinite;
-}
-@keyframes typing {
-    from { width: 0 }
-    to { width: 100% }
-}
-@keyframes blink {
-    50% { border-color: transparent }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -143,6 +129,18 @@ def clean_text(text):
     return text.strip()
 
 # ==============================
+# ✨ HIGHLIGHT KATA KUNCI
+# ==============================
+def highlight_keywords(text, keywords):
+    for kw in keywords:
+        text = re.sub(
+            rf"(?i)({re.escape(kw)})",
+            r"<mark>\\1</mark>",
+            text
+        )
+    return text
+
+# ==============================
 # 📂 LOAD DATA
 # ==============================
 artifact_folder = "artifacts"
@@ -168,27 +166,40 @@ def retrieve_from_doc(query, file_name, top_k=5):
     query_emb = np.array([query_emb]).astype("float32")
 
     distances, indices = index_doc.search(query_emb, top_k)
-    return [doc_chunks.iloc[i]["text"] for i in indices[0] if 0 <= i < len(doc_chunks)]
+    results = []
+    for i in range(top_k):
+        idx = indices[0][i]
+        if 0 <= idx < len(doc_chunks):
+            results.append({
+                "text": doc_chunks.iloc[idx]["text"],
+                "index": int(idx),
+                "distance": float(distances[0][i])
+            })
+    return results
 
 # ==============================
 # 🧠 ASK GEMINI (RAG)
 # ==============================
 def ask_gemini_rag(question, retrieved_chunks):
-    joined_context = "\n\n".join(retrieved_chunks)
+    context_with_refs = "\n\n".join(
+        [f"[Konteks {i+1}]\n{c['text']}" for i, c in enumerate(retrieved_chunks)]
+    )
+
     prompt = f"""
 Kamu adalah asisten hukum profesional.
-Gunakan hanya konteks berikut untuk menjawab pertanyaan secara ringkas dan akurat.
+Jawab pertanyaan pengguna **berdasarkan konteks berikut**.
+Sertakan nomor [Konteks X] ketika relevan agar pengguna tahu sumber jawabannya.
 
 KONTEKS:
-{joined_context}
+{context_with_refs}
 
 PERTANYAAN:
 {question}
 
 Aturan:
-- Jawab langsung berdasarkan isi konteks.
-- Jangan buat asumsi.
-- Jika informasi tidak ada, katakan "Informasi tidak ditemukan dalam konteks."
+- Gunakan referensi [Konteks X] di akhir kalimat yang relevan.
+- Jangan buat asumsi di luar konteks.
+- Jika informasi tidak ditemukan, jawab: "Informasi tidak ditemukan dalam konteks."
 """
     response = llm.invoke(prompt)
     return clean_text(response.content.strip())
@@ -197,17 +208,17 @@ Aturan:
 # 🏠 HEADER & INTRO
 # ==============================
 st.markdown("<h1 class='main-title'>⚖️ Legal Contract Analyzer</h1>", unsafe_allow_html=True)
-st.markdown("<p class='subtitle'>Menganalisis isi kontrak hukum menggunakan kecerdasan buatan Gemini + LangChain RAG</p>", unsafe_allow_html=True)
+st.markdown("<p class='subtitle'>Menganalisis isi kontrak hukum menggunakan Gemini + LangChain RAG</p>", unsafe_allow_html=True)
 
 with st.expander("ℹ️ Tentang Aplikasi", expanded=False):
     st.markdown("""
-    Aplikasi ini dirancang untuk membantu **analisis kontrak hukum atau perjanjian pembiayaan**
+    Aplikasi ini membantu menganalisis **kontrak hukum atau perjanjian pembiayaan**
     menggunakan pendekatan **Retrieval-Augmented Generation (RAG)**.
 
-    **Langkah kerja sistem:**
-    1. Menemukan bagian teks paling relevan dari dokumen kontrak.
-    2. Menggunakan **Gemini AI** untuk menjawab pertanyaan berdasarkan isi dokumen.
-    3. Menampilkan hasil **dengan sumber teks asli** agar transparan.
+    **Cara kerja:**
+    1. Sistem mencari bagian dokumen yang paling relevan.
+    2. Gemini menjawab berdasarkan isi asli dokumen.
+    3. Hasil disertai **referensi ke teks sumber** agar transparan.
 
     💬 *Contoh pertanyaan:*
     - Siapa pihak yang terlibat dalam kontrak?
@@ -244,7 +255,6 @@ user_question = st.text_area(
     placeholder="Contoh: Siapa pihak peminjam dalam kontrak ini?",
     height=120
 )
-st.markdown("</div>", unsafe_allow_html=True)
 
 # ==============================
 # 🚀 TOMBOL ANALISIS
@@ -267,13 +277,15 @@ if st.button("🚀 Analisis Kontrak", use_container_width=True):
             st.markdown("### 🧩 Hasil Analisis Gemini")
             st.markdown(f"<div class='ai-box'>{answer}</div>", unsafe_allow_html=True)
 
-            # === Konteks ===
-            with st.expander("📜 Lihat Konteks dari Dokumen"):
-                for i, chunk in enumerate(docs, start=1):
-                    st.markdown(
-                        f"<div class='context-line'><span class='highlight'>Konteks {i}:</span> {clean_text(chunk)}</div>",
-                        unsafe_allow_html=True,
-                    )
+            # === Konteks Terkait ===
+            st.markdown("### 📚 Sumber Konteks dari Dokumen")
+            keywords = user_question.lower().split()
+            for i, ctx in enumerate(docs, start=1):
+                highlighted = highlight_keywords(clean_text(ctx['text']), keywords)
+                st.markdown(
+                    f"<div class='context-line'><span class='highlight'>Konteks {i}:</span> {highlighted}</div>",
+                    unsafe_allow_html=True,
+                )
 
 # ==============================
 # 🦶 FOOTER
