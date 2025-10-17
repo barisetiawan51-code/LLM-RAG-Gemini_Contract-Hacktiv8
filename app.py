@@ -239,7 +239,6 @@ with st.sidebar:
 # ==============================
 # 💬 INPUT
 # ==============================
-st.markdown("<div class='card'>", unsafe_allow_html=True)
 user_question = st.text_area(
     "Masukkan pertanyaan Anda:",
     placeholder="Contoh: Siapa pihak peminjam dalam kontrak ini?",
