@@ -265,8 +265,7 @@ if mode == "Pertanyaan Manual":
     st.markdown("#### 📝 Pertanyaan Manual")
     user_question = st.text_area(
         "Tulis pertanyaan Anda:",
-        placeholder="Contoh: Apa sanksi jika peminjam terlambat membayar?",
-        height=50
+        placeholder="Contoh: Apa sanksi jika peminjam terlambat membayar?"
     )
     final_question = user_question.strip()
 else:
