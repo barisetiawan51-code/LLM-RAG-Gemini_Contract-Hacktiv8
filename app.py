@@ -180,7 +180,7 @@ def highlight_context(context_text, answer_text):
 # 🏠 HEADER
 # ==============================
 st.markdown("<h1 class='main-title'>⚖️ Legal Contract Analyzer</h1>", unsafe_allow_html=True)
-st.markdown("<p class='subtitle'>Analisis otomatis isi kontrak hukum dengan kecerdasan buatan Gemini & LangChain</p>", unsafe_allow_html=True)
+st.markdown("<p class='subtitle'>Solusi Cerdas untuk Menganalisis Kontrak Hukum atau Perjanjian Pembiayaan Menggunakan Gemini & LangChain</p>", unsafe_allow_html=True)
 with st.expander("ℹ️ Tentang Aplikasi"):
     st.markdown("""
     Aplikasi ini dirancang untuk membantu **analisis kontrak hukum atau perjanjian pembiayaan** 
