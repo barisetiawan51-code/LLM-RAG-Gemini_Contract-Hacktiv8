@@ -185,20 +185,13 @@ def highlight_context(context_text, answer_text):
 st.markdown("<h1 class='main-title'>⚖️ Legal Contract Analyzer</h1>", unsafe_allow_html=True)
 st.markdown("<p class='subtitle'>Analisis otomatis isi kontrak hukum dengan kecerdasan buatan Gemini & LangChain</p>", unsafe_allow_html=True)
 
+# ==============================
+# ℹ️ Tentang
+# ==============================
 with st.expander("ℹ️ Tentang Aplikasi"):
     st.markdown("""
     Aplikasi ini dirancang untuk membantu **analisis kontrak hukum atau perjanjian pembiayaan** 
     menggunakan pendekatan **Retrieval-Augmented Generation (RAG)**.
-
-    🔍 **Cara kerja singkat:**
-    1. Sistem mencari potongan teks paling relevan dari dokumen kontrak.
-    2. Model **Gemini AI** kemudian menjawab pertanyaan Anda **berdasarkan konteks dokumen** — bukan asumsi.
-    3. Hasil analisis disertai **sumber teks asli** agar transparan dan mudah diverifikasi.
-    
-    💬 Contoh pertanyaan:
-    - *Siapa pihak yang terlibat dalam kontrak?*  
-    - *Berapa jumlah pinjaman dan tenor pembayaran?*  
-    - *Apa ketentuan denda keterlambatan?*
     """)
 
 st.markdown("---")
@@ -212,74 +205,68 @@ with st.sidebar:
     target_doc = st.selectbox("Pilih dokumen:", available_docs)
 
 # ==============================
-# 💬 INPUT DENGAN PERTANYAAN OTOMATIS
+# 💬 PENGATURAN MODE PERTANYAAN
+# ==============================
+st.markdown("### ⚙️ Pilih Mode Pertanyaan")
+mode = st.radio(
+    "Pilih metode untuk bertanya:",
+    ["Pertanyaan Manual", "Pertanyaan Otomatis"],
+    horizontal=True
+)
+
+# ==============================
+# 📋 DATA PERTANYAAN OTOMATIS
 # ==============================
 auto_questions = {
     "Pihak Kontrak": [
         "Siapa pihak-pihak yang terlibat dalam perjanjian ini?",
-        "Sebutkan siapa peminjam dan pemberi pinjaman dalam kontrak ini.",
-        "Pihak mana saja yang disebutkan dalam kontrak pembiayaan ini?",
-        "Siapa saja yang menandatangani perjanjian ini?",
-        "Siapa pihak yang menerima pembiayaan dan pihak yang memberikan pembiayaan?"
+        "Sebutkan siapa peminjam dan pemberi pinjaman dalam kontrak ini."
     ],
     "Pembayaran": [
         "Bagaimana sistem pembayaran diatur dalam kontrak ini?",
-        "Berapa jangka waktu dan jumlah cicilan yang disepakati?",
-        "Bagaimana ketentuan pembayaran dijelaskan oleh kontrak?",
-        "Apakah pembayaran dilakukan setiap bulan atau sesuai kesepakatan tertentu?",
-        "Ceritakan bagaimana proses pembayaran dijelaskan dalam perjanjian ini."
+        "Berapa jangka waktu dan jumlah cicilan yang disepakati?"
     ],
     "Bunga": [
         "Berapa tingkat bunga yang ditetapkan dalam kontrak?",
-        "Apakah terdapat bunga tambahan atau penyesuaian tahunan?",
-        "Bagaimana suku bunga dihitung dalam perjanjian pembiayaan ini?",
-        "Apakah tingkat bunga bersifat tetap atau berubah?",
-        "Bagaimana cara penentuan bunga dijelaskan dalam kontrak?"
+        "Apakah terdapat bunga tambahan atau penyesuaian tahunan?"
     ],
     "Denda": [
         "Apa yang terjadi jika peminjam terlambat membayar cicilan?",
-        "Apakah ada denda atau penalti atas keterlambatan pembayaran?",
-        "Bagaimana kontrak mengatur konsekuensi keterlambatan pembayaran?",
-        "Berapa besar denda yang dikenakan jika terjadi pelanggaran?",
-        "Apakah kontrak menyebutkan sanksi terkait keterlambatan pembayaran?"
+        "Berapa besar denda yang dikenakan jika terjadi pelanggaran?"
     ],
     "Jaminan": [
         "Apa bentuk jaminan yang diberikan oleh peminjam?",
-        "Bagaimana jaminan atau agunan diatur dalam kontrak ini?",
-        "Siapa yang memegang hak atas jaminan sampai pembiayaan lunas?",
-        "Apakah aset yang dibiayai dijadikan jaminan?",
-        "Bagaimana proses eksekusi jaminan dijelaskan dalam perjanjian?"
+        "Bagaimana jaminan atau agunan diatur dalam kontrak ini?"
     ],
     "Hukum": [
         "Pengadilan mana yang berwenang menyelesaikan sengketa?",
-        "Bagaimana kontrak mengatur yurisdiksi hukum?",
-        "Apakah ada klausul yang menetapkan wilayah hukum tertentu?",
-        "Jika terjadi sengketa, di mana perkara akan diselesaikan?",
-        "Bagaimana ketentuan hukum dijelaskan dalam kontrak ini?"
+        "Bagaimana kontrak mengatur yurisdiksi hukum?"
     ]
 }
 
-st.markdown("### 💡 Pilih pertanyaan otomatis (opsional):")
-category = st.selectbox("Kategori pertanyaan:", ["— Tidak memilih —"] + list(auto_questions.keys()))
-
-selected_auto_question = ""
-if category != "— Tidak memilih —":
-    selected_auto_question = st.selectbox(
-        "Pilih pertanyaan:",
-        ["— Tidak memilih —"] + auto_questions[category]
+# ==============================
+# 📥 INPUT SESUAI MODE
+# ==============================
+if mode == "Pertanyaan Manual":
+    user_question = st.text_area(
+        "📝 Tulis pertanyaan Anda:",
+        placeholder="Contoh: Apa sanksi jika peminjam terlambat membayar?",
+        height=100
     )
+    final_question = user_question.strip()
 
-# Kolom input manual
-user_question = st.text_area(
-    "Atau tulis pertanyaan Anda sendiri:",
-    placeholder="Contoh: Apa sanksi jika peminjam terlambat membayar?",
-    height=100
-)
-
-# Tentukan pertanyaan akhir
-final_question = user_question.strip() or (
-    selected_auto_question if selected_auto_question != "— Tidak memilih —" else ""
-)
+else:  # mode otomatis
+    st.markdown("### 💡 Pilih Pertanyaan Otomatis")
+    category = st.selectbox("Kategori:", ["— Pilih kategori —"] + list(auto_questions.keys()))
+    selected_auto_question = ""
+    if category != "— Pilih kategori —":
+        selected_auto_question = st.selectbox(
+            "Pertanyaan yang tersedia:",
+            ["— Pilih pertanyaan —"] + auto_questions[category]
+        )
+    final_question = (
+        selected_auto_question if selected_auto_question != "— Pilih pertanyaan —" else ""
+    )
 
 # ==============================
 # 🚀 TOMBOL ANALISIS
