@@ -14,6 +14,7 @@ Setiap kontrak dirancang menyerupai dokumen dunia nyata dengan elemen yang reali
 1. Struktur dan format hukum yang autentik.
 2. Tanggal, dan nilai kontrak yang sesuai konteks.
 3. Beragam kategori, seperti pembiayaan properti, kendaraan, pendidikan, kesehatan, dan pinjaman umum.
+
 Dataset ini menjadi dasar yang kuat untuk melatih dan menguji model kecerdasan buatan dalam tugas pemahaman dokumen hukum, analisis kontrak, serta ekstraksi klausul penting.
 
 ## 🧠 Pertanyaan bisnis yang bisa dijawab chatbot
