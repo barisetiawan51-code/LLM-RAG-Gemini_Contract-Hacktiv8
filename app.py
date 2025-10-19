@@ -142,7 +142,7 @@ def ask_gemini_rag(question, retrieved_chunks):
     joined_context = "\n\n".join(retrieved_chunks)
     prompt = f"""
 Anda adalah asisten hukum profesional namun komunikatif.
-Analisis isi kontrak pembiayaan berikut untuk menjawab pertanyaan dengan tidak terlalu kaku.
+Gunakan hanya konteks berikut untuk menjawab pertanyaan secara ringkas dan akurat.
 
 KONTEKS:
 {joined_context}
