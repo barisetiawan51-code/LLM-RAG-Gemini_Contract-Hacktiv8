@@ -118,7 +118,7 @@ embeddings = np.load(os.path.join(artifact_folder, "embeddings.npy"))
 # ==============================
 # 🔍 RETRIEVAL
 # ==============================
-def retrieve_from_doc(query, file_name, top_k=5):
+def retrieve_from_doc(query, file_name, top_k=5):  # top_k default = 5
     doc_mask = chunks_df["filename"].str.lower() == file_name.lower()
     doc_chunks = chunks_df[doc_mask].reset_index(drop=True)
     doc_embeddings = embeddings[doc_mask]
@@ -162,14 +162,10 @@ Aturan:
 # ✨ HIGHLIGHT KONTEKS
 # ==============================
 def highlight_context(context_text, answer_text):
-    """Menyorot kata kunci penting dari jawaban dalam konteks."""
-    # Tangkap angka, kata kapital, dan nama umum
     keywords = re.findall(
         r"\$?\d[\d,\.]*|[A-Z]{2,}(?:\s[A-Z]{2,})*|\b[A-Z][a-z]+\b",
         answer_text
     )
-
-    # Hilangkan duplikat dan urutkan berdasarkan panjang agar tidak tumpang tindih
     keywords = sorted(set(keywords), key=len, reverse=True)
 
     highlighted = context_text
@@ -214,7 +210,6 @@ with st.sidebar:
     st.header("📁 Pengaturan Dokumen")
     available_docs = sorted(chunks_df["filename"].unique().tolist())
     target_doc = st.selectbox("Pilih dokumen:", available_docs)
-    top_k = st.slider("🔎 Jumlah konteks teratas", 3, 10, 5)
 
 # ==============================
 # 💬 INPUT
@@ -233,7 +228,7 @@ if st.button("🚀 Analisis Kontrak", use_container_width=True):
         st.warning("⚠️ Harap isi pertanyaan terlebih dahulu.")
     else:
         with st.spinner("🔎 Mencari konteks relevan..."):
-            docs = retrieve_from_doc(user_question, target_doc, top_k=top_k)
+            docs = retrieve_from_doc(user_question, target_doc)  # tanpa pengaturan top_k
 
         if not docs:
             st.error("❌ Tidak ada konteks ditemukan untuk dokumen ini.")
@@ -241,12 +236,10 @@ if st.button("🚀 Analisis Kontrak", use_container_width=True):
             with st.spinner("🧠 Menganalisis dengan Gemini..."):
                 answer = ask_gemini_rag(user_question, docs)
 
-            # === Jawaban ===
             st.markdown("---")
             st.markdown("### 🧩 Hasil Analisis Gemini")
             st.markdown(f"<div class='ai-box'>{answer}</div>", unsafe_allow_html=True)
 
-            # === Sumber konteks (dropdown collapsible) ===
             with st.expander("📚 Lihat Sumber Konteks dari Dokumen"):
                 st.markdown(f"**📄 Dokumen:** *{target_doc}*")
                 combined_text = " ".join(docs)
