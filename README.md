@@ -8,6 +8,14 @@ Membangun chatbot LLM berbasis RAG yang dapat memahami dan menjawab pertanyaan t
 * Tingkat kesalahan manusia tinggi.
 * Skalabilitas.
 
+## 📚 Tentang Dataset
+Dataset ini berisi 30 dokumen kontrak hukum independen yang ditulis dalam bahasa Inggris.
+Setiap kontrak dirancang menyerupai dokumen dunia nyata dengan elemen yang realistis, mencakup:
+1. Struktur dan format hukum yang autentik.
+2. Tanggal, dan nilai kontrak yang sesuai konteks.
+3. Beragam kategori, seperti pembiayaan properti, kendaraan, pendidikan, kesehatan, dan pinjaman umum.
+Dataset ini menjadi dasar yang kuat untuk melatih dan menguji model kecerdasan buatan dalam tugas pemahaman dokumen hukum, analisis kontrak, serta ekstraksi klausul penting.
+
 ## 🧠 Pertanyaan bisnis yang bisa dijawab chatbot
 
 | Kategori             | Contoh Pertanyaan                                      |
@@ -29,11 +37,11 @@ Membangun chatbot LLM berbasis RAG yang dapat memahami dan menjawab pertanyaan t
  4. Pelaku bisnis & individu yang ingin memahami isi kontrak secara cepat dan jelas.
 
 ## 💰 Potensi penerapan bisnis
-| Bidang                     | Implementasi                                     |
-| -------------------------- | ------------------------------------------------ |
-| **Perbankan & Kredit**     | Chatbot analisis kontrak kredit atau hipotek     |
-| **Properti / Real Estate** | Tanya jawab kontrak pembelian atau sewa properti |
-| **Asuransi**               | Ringkasan polis dan klaim asuransi               |
-| **LegalTech**              | Asisten hukum otomatis untuk draft kontrak       |
-| **Korporasi besar**        | Analisis massal ribuan kontrak vendor/supplier   |
+| Bidang                  | Implementasi                                                   |
+| ----------------------- | -------------------------------------------------------------- |
+| **Real Estate**         | Kontrak pembiayaan rumah dan apartemen.                        |
+| **Vehicles**            | Kontrak pembiayaan kendaraan, termasuk mobil dan sepeda motor. |
+| **Education**           | Perjanjian pinjaman pendidikan (student loan agreements).      |
+| **Health**              | Kontrak terkait layanan medis dan asuransi kesehatan.          |
+| **KGeneral Financing**  | Perjanjian pinjaman pribadi maupun bisnis.                     |
 
