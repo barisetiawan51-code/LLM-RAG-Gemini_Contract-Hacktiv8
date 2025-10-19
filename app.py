@@ -266,7 +266,7 @@ if mode == "Pertanyaan Manual":
     user_question = st.text_area(
         "Tulis pertanyaan Anda:",
         placeholder="Contoh: Apa sanksi jika peminjam terlambat membayar?",
-        height=80
+        height=50
     )
     final_question = user_question.strip()
 else:
