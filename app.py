@@ -27,8 +27,8 @@ st.markdown("""
     color: #e6edf3;
 }
 .main > div {
-        padding-top: 0rem !important;
-}           
+    padding-top: 0rem !important;
+}
 .main-title {
     text-align: center;
     font-size: 2.7rem;
@@ -118,7 +118,7 @@ embeddings = np.load(os.path.join(artifact_folder, "embeddings.npy"))
 # ==============================
 # 🔍 RETRIEVAL
 # ==============================
-def retrieve_from_doc(query, file_name, top_k=5):  # top_k default = 5
+def retrieve_from_doc(query, file_name, top_k=5):
     doc_mask = chunks_df["filename"].str.lower() == file_name.lower()
     doc_chunks = chunks_df[doc_mask].reset_index(drop=True)
     doc_embeddings = embeddings[doc_mask]
@@ -212,29 +212,90 @@ with st.sidebar:
     target_doc = st.selectbox("Pilih dokumen:", available_docs)
 
 # ==============================
-# 💬 INPUT
+# 💬 INPUT DENGAN PERTANYAAN OTOMATIS
 # ==============================
+auto_questions = {
+    "Pihak Kontrak": [
+        "Siapa pihak-pihak yang terlibat dalam perjanjian ini?",
+        "Sebutkan siapa peminjam dan pemberi pinjaman dalam kontrak ini.",
+        "Pihak mana saja yang disebutkan dalam kontrak pembiayaan ini?",
+        "Siapa saja yang menandatangani perjanjian ini?",
+        "Siapa pihak yang menerima pembiayaan dan pihak yang memberikan pembiayaan?"
+    ],
+    "Pembayaran": [
+        "Bagaimana sistem pembayaran diatur dalam kontrak ini?",
+        "Berapa jangka waktu dan jumlah cicilan yang disepakati?",
+        "Bagaimana ketentuan pembayaran dijelaskan oleh kontrak?",
+        "Apakah pembayaran dilakukan setiap bulan atau sesuai kesepakatan tertentu?",
+        "Ceritakan bagaimana proses pembayaran dijelaskan dalam perjanjian ini."
+    ],
+    "Bunga": [
+        "Berapa tingkat bunga yang ditetapkan dalam kontrak?",
+        "Apakah terdapat bunga tambahan atau penyesuaian tahunan?",
+        "Bagaimana suku bunga dihitung dalam perjanjian pembiayaan ini?",
+        "Apakah tingkat bunga bersifat tetap atau berubah?",
+        "Bagaimana cara penentuan bunga dijelaskan dalam kontrak?"
+    ],
+    "Denda": [
+        "Apa yang terjadi jika peminjam terlambat membayar cicilan?",
+        "Apakah ada denda atau penalti atas keterlambatan pembayaran?",
+        "Bagaimana kontrak mengatur konsekuensi keterlambatan pembayaran?",
+        "Berapa besar denda yang dikenakan jika terjadi pelanggaran?",
+        "Apakah kontrak menyebutkan sanksi terkait keterlambatan pembayaran?"
+    ],
+    "Jaminan": [
+        "Apa bentuk jaminan yang diberikan oleh peminjam?",
+        "Bagaimana jaminan atau agunan diatur dalam kontrak ini?",
+        "Siapa yang memegang hak atas jaminan sampai pembiayaan lunas?",
+        "Apakah aset yang dibiayai dijadikan jaminan?",
+        "Bagaimana proses eksekusi jaminan dijelaskan dalam perjanjian?"
+    ],
+    "Hukum": [
+        "Pengadilan mana yang berwenang menyelesaikan sengketa?",
+        "Bagaimana kontrak mengatur yurisdiksi hukum?",
+        "Apakah ada klausul yang menetapkan wilayah hukum tertentu?",
+        "Jika terjadi sengketa, di mana perkara akan diselesaikan?",
+        "Bagaimana ketentuan hukum dijelaskan dalam kontrak ini?"
+    ]
+}
+
+st.markdown("### 💡 Pilih pertanyaan otomatis (opsional):")
+category = st.selectbox("Kategori pertanyaan:", ["— Tidak memilih —"] + list(auto_questions.keys()))
+
+selected_auto_question = ""
+if category != "— Tidak memilih —":
+    selected_auto_question = st.selectbox(
+        "Pilih pertanyaan:",
+        ["— Tidak memilih —"] + auto_questions[category]
+    )
+
+# Kolom input manual
 user_question = st.text_area(
-    "Masukkan pertanyaan Anda:",
+    "Atau tulis pertanyaan Anda sendiri:",
     placeholder="Contoh: Apa sanksi jika peminjam terlambat membayar?",
     height=100
+)
+
+# Tentukan pertanyaan akhir
+final_question = user_question.strip() or (
+    selected_auto_question if selected_auto_question != "— Tidak memilih —" else ""
 )
 
 # ==============================
 # 🚀 TOMBOL ANALISIS
 # ==============================
 if st.button("🚀 Analisis Kontrak", use_container_width=True):
-    if not user_question.strip():
-        st.warning("⚠️ Harap isi pertanyaan terlebih dahulu.")
+    if not final_question:
+        st.warning("⚠️ Harap isi atau pilih pertanyaan terlebih dahulu.")
     else:
         with st.spinner("🔎 Mencari konteks relevan..."):
-            docs = retrieve_from_doc(user_question, target_doc)  # tanpa pengaturan top_k
+            docs = retrieve_from_doc(final_question, target_doc)
 
         if not docs:
             st.error("❌ Tidak ada konteks ditemukan untuk dokumen ini.")
         else:
             with st.spinner("🧠 Menganalisis dengan Gemini..."):
-                answer = ask_gemini_rag(user_question, docs)
+                answer = ask_gemini_rag(final_question, docs)
 
             st.markdown("---")
             st.markdown("### 🧩 Hasil Analisis Gemini")
