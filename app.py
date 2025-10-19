@@ -60,6 +60,21 @@ st.markdown("""
     font-size: 0.95rem;
     line-height: 1.6;
 }
+.suggest-box {
+    background: rgba(30, 40, 55, 0.6);
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 0.8rem;
+    margin-top: 1rem;
+}
+.suggest-title {
+    color: #58a6ff;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+}
+.suggest-btn {
+    margin: 0.2rem;
+}
 mark {
     background-color: #fef08a;
     color: #000;
@@ -118,7 +133,7 @@ embeddings = np.load(os.path.join(artifact_folder, "embeddings.npy"))
 # ==============================
 # 🔍 RETRIEVAL
 # ==============================
-def retrieve_from_doc(query, file_name, top_k=5):  # top_k default = 5
+def retrieve_from_doc(query, file_name, top_k=5):
     doc_mask = chunks_df["filename"].str.lower() == file_name.lower()
     doc_chunks = chunks_df[doc_mask].reset_index(drop=True)
     doc_embeddings = embeddings[doc_mask]
@@ -217,8 +232,30 @@ with st.sidebar:
 user_question = st.text_area(
     "Masukkan pertanyaan Anda:",
     placeholder="Contoh: Apa sanksi jika peminjam terlambat membayar?",
-    height=100
+    height=100,
+    key="user_input"
 )
+
+# ==============================
+# 💡 SUGGESTED QUESTIONS
+# ==============================
+suggested_questions = [
+    "Siapa pihak yang terlibat dalam kontrak?",
+    "Berapa jumlah pinjaman dan jangka waktu pembayaran?",
+    "Apa sanksi jika terjadi keterlambatan pembayaran?",
+    "Bagaimana ketentuan pemutusan kontrak?",
+    "Siapa yang memiliki yurisdiksi hukum atas perjanjian ini?"
+]
+
+if not user_question.strip():
+    st.markdown("<div class='suggest-box'>", unsafe_allow_html=True)
+    st.markdown("<div class='suggest-title'>💡 Bingung mau nanya apa? Coba pilih salah satu pertanyaan berikut:</div>", unsafe_allow_html=True)
+    cols = st.columns(2)
+    for i, q in enumerate(suggested_questions):
+        if cols[i % 2].button(f"💬 {q}", key=f"suggest_{i}"):
+            st.session_state.user_input = q
+            st.rerun()
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ==============================
 # 🚀 TOMBOL ANALISIS
@@ -228,7 +265,7 @@ if st.button("🚀 Analisis Kontrak", use_container_width=True):
         st.warning("⚠️ Harap isi pertanyaan terlebih dahulu.")
     else:
         with st.spinner("🔎 Mencari konteks relevan..."):
-            docs = retrieve_from_doc(user_question, target_doc)  # tanpa pengaturan top_k
+            docs = retrieve_from_doc(user_question, target_doc)
 
         if not docs:
             st.error("❌ Tidak ada konteks ditemukan untuk dokumen ini.")
