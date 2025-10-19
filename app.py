@@ -150,11 +150,10 @@ KONTEKS:
 PERTANYAAN:
 {question}
 
-Petunjuk:
-- Gunakan informasi yang ada pada konteks secara langsung.
-- Jangan membuat asumsi jika data tidak disebutkan.
-- Jelaskan jawaban Anda dengan bahasa alami, profesional, dan mudah dipahami.
-- Jika tidak ada informasi relevan, tulis dengan sopan bahwa data tersebut tidak tersedia dalam konteks.
+Aturan:
+- Jawab langsung berdasarkan isi konteks.
+- Jangan buat asumsi.
+- Jika informasi tidak ada, katakan "Informasi tidak ditemukan dalam konteks."
 """
     response = llm.invoke(prompt)
     return clean_text(response.content.strip())
