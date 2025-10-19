@@ -26,9 +26,6 @@ st.markdown("""
     background: linear-gradient(145deg, #0d1117, #0a0f14);
     color: #e6edf3;
 }
-.main > div {
-    padding-top: 0rem !important;
-}
 .main-title {
     text-align: center;
     font-size: 2.7rem;
@@ -184,35 +181,23 @@ def highlight_context(context_text, answer_text):
 # ==============================
 st.markdown("<h1 class='main-title'>⚖️ Legal Contract Analyzer</h1>", unsafe_allow_html=True)
 st.markdown("<p class='subtitle'>Analisis otomatis isi kontrak hukum dengan kecerdasan buatan Gemini & LangChain</p>", unsafe_allow_html=True)
-
-# ==============================
-# ℹ️ Tentang
-# ==============================
-with st.expander("ℹ️ Tentang Aplikasi"):
-    st.markdown("""
-    Aplikasi ini dirancang untuk membantu **analisis kontrak hukum atau perjanjian pembiayaan** 
-    menggunakan pendekatan **Retrieval-Augmented Generation (RAG)**.
-    """)
-
 st.markdown("---")
 
 # ==============================
-# 🧱 SIDEBAR
+# 🧱 SIDEBAR (PENGATURAN)
 # ==============================
 with st.sidebar:
     st.header("📁 Pengaturan Dokumen")
     available_docs = sorted(chunks_df["filename"].unique().tolist())
     target_doc = st.selectbox("Pilih dokumen:", available_docs)
 
-# ==============================
-# 💬 PENGATURAN MODE PERTANYAAN
-# ==============================
-st.markdown("### ⚙️ Pilih Mode Pertanyaan")
-mode = st.radio(
-    "Pilih metode untuk bertanya:",
-    ["Pertanyaan Manual", "Pertanyaan Otomatis"],
-    horizontal=True
-)
+    st.markdown("---")
+    st.subheader("⚙️ Metode Pertanyaan")
+    mode = st.radio(
+        "Pilih metode:",
+        ["Pertanyaan Manual", "Pertanyaan Otomatis"],
+        index=0
+    )
 
 # ==============================
 # 📋 DATA PERTANYAAN OTOMATIS
@@ -248,20 +233,20 @@ auto_questions = {
 # 📥 INPUT SESUAI MODE
 # ==============================
 if mode == "Pertanyaan Manual":
+    st.markdown("### 📝 Pertanyaan Manual")
     user_question = st.text_area(
-        "📝 Tulis pertanyaan Anda:",
+        "Tulis pertanyaan Anda:",
         placeholder="Contoh: Apa sanksi jika peminjam terlambat membayar?",
         height=100
     )
     final_question = user_question.strip()
-
-else:  # mode otomatis
-    st.markdown("### 💡 Pilih Pertanyaan Otomatis")
+else:
+    st.markdown("### 💡 Pertanyaan Otomatis")
     category = st.selectbox("Kategori:", ["— Pilih kategori —"] + list(auto_questions.keys()))
     selected_auto_question = ""
     if category != "— Pilih kategori —":
         selected_auto_question = st.selectbox(
-            "Pertanyaan yang tersedia:",
+            "Pilih pertanyaan:",
             ["— Pilih pertanyaan —"] + auto_questions[category]
         )
     final_question = (
