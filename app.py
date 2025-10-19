@@ -7,7 +7,7 @@ import streamlit as st
 from sklearn.metrics.pairwise import cosine_similarity
 from langchain_google_genai import ChatGoogleGenerativeAI
 from google.generativeai import embed_content
-import random  # 👈 tambahan
+import random
 
 # ==============================
 # ⚙️ KONFIGURASI DASAR STREAMLIT
@@ -27,53 +27,28 @@ st.markdown("""
     background: linear-gradient(145deg, #0d1117, #0a0f14);
     color: #e6edf3;
 }
-.main > div {
-        padding-top: 0rem !important;
-}           
+.main > div { padding-top: 0rem !important; }           
 .main-title {
-    text-align: center;
-    font-size: 2.7rem;
-    color: #58a6ff;
-    font-weight: 700;
+    text-align: center; font-size: 2.7rem; color: #58a6ff; font-weight: 700;
 }
 .subtitle {
-    text-align: center;
-    color: #a9b1ba;
-    font-size: 1.1rem;
-    margin-bottom: 2rem;
+    text-align: center; color: #a9b1ba; font-size: 1.1rem; margin-bottom: 2rem;
 }
 .ai-box {
-    background: rgba(30, 40, 55, 0.9);
-    border-left: 4px solid #58a6ff;
-    padding: 1rem 1.3rem;
-    border-radius: 12px;
-    margin-top: 1rem;
-    font-size: 1.05rem;
-    line-height: 1.6;
-    box-shadow: 0 0 10px rgba(88,166,255,0.2);
+    background: rgba(30, 40, 55, 0.9); border-left: 4px solid #58a6ff;
+    padding: 1rem 1.3rem; border-radius: 12px; margin-top: 1rem;
+    font-size: 1.05rem; line-height: 1.6; box-shadow: 0 0 10px rgba(88,166,255,0.2);
 }
 .context-box {
-    background: #161b22;
-    border: 1px solid #30363d;
-    border-radius: 10px;
-    padding: 0.9rem;
-    color: #a9b1ba;
-    font-size: 0.95rem;
-    line-height: 1.6;
+    background: #161b22; border: 1px solid #30363d; border-radius: 10px;
+    padding: 0.9rem; color: #a9b1ba; font-size: 0.95rem; line-height: 1.6;
 }
 mark {
-    background-color: #fef08a;
-    color: #000;
-    border-radius: 4px;
-    padding: 2px 4px;
+    background-color: #fef08a; color: #000; border-radius: 4px; padding: 2px 4px;
 }
 .footer {
-    text-align: center;
-    margin-top: 3rem;
-    padding-top: 1rem;
-    border-top: 1px solid #30363d;
-    color: #8b949e;
-    font-size: 0.85rem;
+    text-align: center; margin-top: 3rem; padding-top: 1rem;
+    border-top: 1px solid #30363d; color: #8b949e; font-size: 0.85rem;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -163,10 +138,7 @@ Aturan:
 # ✨ HIGHLIGHT KONTEKS
 # ==============================
 def highlight_context(context_text, answer_text):
-    keywords = re.findall(
-        r"\$?\d[\d,\.]*|[A-Z]{2,}(?:\s[A-Z]{2,})*|\b[A-Z][a-z]+\b",
-        answer_text
-    )
+    keywords = re.findall(r"\$?\d[\d,\.]*|[A-Z]{2,}(?:\s[A-Z]{2,})*|\b[A-Z][a-z]+\b", answer_text)
     keywords = sorted(set(keywords), key=len, reverse=True)
     highlighted = context_text
     for kw in keywords:
@@ -175,62 +147,38 @@ def highlight_context(context_text, answer_text):
     return highlighted
 
 # ==============================
-# 🧩 PERTANYAAN OTOMATIS
+# 🔄 AUTO QUESTION GENERATOR
 # ==============================
-def generate_questions(topic, n=3):
-    variations = {
-        "pihak kontrak": [
-            "Siapa pihak-pihak yang terlibat dalam perjanjian ini?",
-            "Sebutkan siapa peminjam dan pemberi pinjaman dalam kontrak ini.",
-            "Siapa saja yang menandatangani perjanjian ini?"
+def generate_questions(topic):
+    questions = {
+        "Pihak Kontrak": [
+            "Siapa pihak-pihak yang terlibat dalam kontrak ini?",
+            "Siapa peminjam dan pemberi pinjaman yang disebutkan?",
         ],
-        "pembayaran": [
+        "Pembayaran": [
             "Bagaimana sistem pembayaran diatur dalam kontrak ini?",
-            "Berapa jangka waktu dan jumlah cicilan yang disepakati?",
-            "Apakah pembayaran dilakukan setiap bulan atau sesuai kesepakatan tertentu?"
+            "Berapa jumlah dan jangka waktu pembayaran?",
         ],
-        "bunga": [
-            "Berapa tingkat bunga yang ditetapkan dalam kontrak?",
-            "Bagaimana suku bunga dihitung dalam perjanjian pembiayaan ini?",
-            "Apakah tingkat bunga bersifat tetap atau berubah?"
+        "Denda": [
+            "Apa sanksi jika peminjam terlambat membayar?",
+            "Apakah ada penalti atas keterlambatan?",
         ],
-        "denda": [
-            "Apa yang terjadi jika peminjam terlambat membayar cicilan?",
-            "Apakah ada denda atas keterlambatan pembayaran?",
-            "Berapa besar denda yang dikenakan jika terjadi pelanggaran?"
+        "Jaminan": [
+            "Apa bentuk jaminan yang diberikan peminjam?",
+            "Bagaimana jaminan diatur dalam kontrak ini?",
         ],
-        "jaminan": [
-            "Apa bentuk jaminan yang diberikan oleh peminjam?",
-            "Bagaimana jaminan atau agunan diatur dalam kontrak ini?",
-            "Apakah aset yang dibiayai dijadikan jaminan?"
-        ],
-        "hukum": [
-            "Pengadilan mana yang berwenang menyelesaikan sengketa?",
+        "Hukum & Yurisdiksi": [
+            "Pengadilan mana yang berwenang menangani sengketa?",
             "Bagaimana kontrak mengatur yurisdiksi hukum?",
-            "Apakah ada klausul yang menetapkan wilayah hukum tertentu?"
-        ]
+        ],
     }
-    if topic not in variations:
-        return ["Topik tidak dikenal."]
-    return random.sample(variations[topic], n)
+    return questions.get(topic, [])
 
 # ==============================
 # 🏠 HEADER
 # ==============================
 st.markdown("<h1 class='main-title'>⚖️ Legal Contract Analyzer</h1>", unsafe_allow_html=True)
 st.markdown("<p class='subtitle'>Analisis otomatis isi kontrak hukum dengan kecerdasan buatan Gemini & LangChain</p>", unsafe_allow_html=True)
-
-with st.expander("ℹ️ Tentang Aplikasi"):
-    st.markdown("""
-    Aplikasi ini dirancang untuk membantu **analisis kontrak hukum atau perjanjian pembiayaan** 
-    menggunakan pendekatan **Retrieval-Augmented Generation (RAG)**.
-
-    🔍 **Cara kerja singkat:**
-    1. Sistem mencari potongan teks paling relevan dari dokumen kontrak.
-    2. Model **Gemini AI** menjawab pertanyaan berdasarkan konteks dokumen.
-    3. Hasil analisis disertai sumber teks asli agar mudah diverifikasi.
-    """)
-
 st.markdown("---")
 
 # ==============================
@@ -241,23 +189,9 @@ with st.sidebar:
     available_docs = sorted(chunks_df["filename"].unique().tolist())
     target_doc = st.selectbox("Pilih dokumen:", available_docs)
     top_k = st.slider("🔎 Jumlah konteks teratas", 3, 10, 5)
-
-    # === Tambahan: mode pertanyaan ===
-    mode = st.radio("Pilih mode pertanyaan:", ["Ketik manual", "Pertanyaan otomatis"])
-
-    if mode == "Pertanyaan otomatis":
-        topic = st.selectbox("Pilih topik pertanyaan:", ["pihak kontrak", "pembayaran", "bunga", "denda", "jaminan", "hukum"])
-        if st.button("🎯 Generate Pertanyaan"):
-            auto_questions = generate_questions(topic)
-            for q in auto_questions:
-                st.markdown(f"**❓ {q}**")
-                docs = retrieve_from_doc(q, target_doc, top_k=top_k)
-                if docs:
-                    answer = ask_gemini_rag(q, docs)
-                    st.markdown(f"<div class='ai-box'>{answer}</div>", unsafe_allow_html=True)
-                else:
-                    st.warning("Tidak ada konteks relevan ditemukan.")
-            st.stop()
+    st.markdown("---")
+    st.header("💡 Pertanyaan Otomatis")
+    selected_topic = st.selectbox("Pilih kategori:", ["Pihak Kontrak", "Pembayaran", "Denda", "Jaminan", "Hukum & Yurisdiksi"])
 
 # ==============================
 # 💬 INPUT MANUAL
@@ -269,32 +203,34 @@ user_question = st.text_area(
 )
 
 # ==============================
-# 🚀 TOMBOL ANALISIS
+# 🚀 ANALISIS MANUAL + OTOMATIS
 # ==============================
 if st.button("🚀 Analisis Kontrak", use_container_width=True):
-    if not user_question.strip():
-        st.warning("⚠️ Harap isi pertanyaan terlebih dahulu.")
-    else:
+    all_questions = []
+    if user_question.strip():
+        all_questions.append(user_question.strip())
+
+    # tambahkan pertanyaan otomatis
+    all_questions.extend(generate_questions(selected_topic))
+
+    for q in all_questions:
+        st.markdown(f"### ❓ {q}")
         with st.spinner("🔎 Mencari konteks relevan..."):
-            docs = retrieve_from_doc(user_question, target_doc, top_k=top_k)
-
+            docs = retrieve_from_doc(q, target_doc, top_k=top_k)
         if not docs:
-            st.error("❌ Tidak ada konteks ditemukan untuk dokumen ini.")
-        else:
-            with st.spinner("🧠 Menganalisis dengan Gemini..."):
-                answer = ask_gemini_rag(user_question, docs)
+            st.warning("Tidak ditemukan konteks relevan.")
+            continue
+        with st.spinner("🧠 Menganalisis dengan Gemini..."):
+            answer = ask_gemini_rag(q, docs)
 
-            # === Jawaban ===
-            st.markdown("---")
-            st.markdown("### 🧩 Hasil Analisis Gemini")
-            st.markdown(f"<div class='ai-box'>{answer}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='ai-box'>{answer}</div>", unsafe_allow_html=True)
 
-            # === Sumber konteks ===
-            with st.expander("📚 Lihat Sumber Konteks dari Dokumen"):
-                st.markdown(f"**📄 Dokumen:** *{target_doc}*")
-                combined_text = " ".join(docs)
-                highlighted_md = highlight_context(clean_text(combined_text), answer)
-                st.markdown(f"<div class='context-box'>{highlighted_md}</div>", unsafe_allow_html=True)
+        with st.expander("📚 Lihat Sumber Konteks dari Dokumen"):
+            st.markdown(f"**📄 Dokumen:** *{target_doc}*")
+            combined_text = " ".join(docs)
+            highlighted_md = highlight_context(clean_text(combined_text), answer)
+            st.markdown(f"<div class='context-box'>{highlighted_md}</div>", unsafe_allow_html=True)
+        st.markdown("---")
 
 # ==============================
 # 🦶 FOOTER
