@@ -203,30 +203,48 @@ with st.sidebar:
 # 📋 DATA PERTANYAAN OTOMATIS
 # ==============================
 auto_questions = {
-    "Pihak Kontrak": [
-        "Siapa pihak-pihak yang terlibat dalam perjanjian ini?",
-        "Sebutkan siapa peminjam dan pemberi pinjaman dalam kontrak ini."
-    ],
-    "Pembayaran": [
-        "Bagaimana sistem pembayaran diatur dalam kontrak ini?",
-        "Berapa jangka waktu dan jumlah cicilan yang disepakati?"
-    ],
-    "Bunga": [
-        "Berapa tingkat bunga yang ditetapkan dalam kontrak?",
-        "Apakah terdapat bunga tambahan atau penyesuaian tahunan?"
-    ],
-    "Denda": [
-        "Apa yang terjadi jika peminjam terlambat membayar cicilan?",
-        "Berapa besar denda yang dikenakan jika terjadi pelanggaran?"
-    ],
-    "Jaminan": [
-        "Apa bentuk jaminan yang diberikan oleh peminjam?",
-        "Bagaimana jaminan atau agunan diatur dalam kontrak ini?"
-    ],
-    "Hukum": [
-        "Pengadilan mana yang berwenang menyelesaikan sengketa?",
-        "Bagaimana kontrak mengatur yurisdiksi hukum?"
-    ]
+        "pihak kontrak": [
+            "Siapa pihak-pihak yang terlibat dalam perjanjian ini?",
+            "Sebutkan siapa peminjam dan pemberi pinjaman dalam kontrak ini.",
+            "Pihak mana saja yang disebutkan dalam kontrak pembiayaan ini?",
+            "Siapa saja yang menandatangani perjanjian ini?",
+            "Siapa pihak yang menerima pembiayaan dan pihak yang memberikan pembiayaan?"
+        ],
+        "pembayaran": [
+            "Bagaimana sistem pembayaran diatur dalam kontrak ini?",
+            "Berapa jangka waktu dan jumlah cicilan yang disepakati?",
+            "Bagaimana ketentuan pembayaran dijelaskan oleh kontrak?",
+            "Apakah pembayaran dilakukan setiap bulan atau sesuai kesepakatan tertentu?",
+            "Ceritakan bagaimana proses pembayaran dijelaskan dalam perjanjian ini."
+        ],
+        "bunga": [
+            "Berapa tingkat bunga yang ditetapkan dalam kontrak?",
+            "Apakah terdapat bunga tambahan atau penyesuaian tahunan?",
+            "Bagaimana suku bunga dihitung dalam perjanjian pembiayaan ini?",
+            "Apakah tingkat bunga bersifat tetap atau berubah?",
+            "Bagaimana cara penentuan bunga dijelaskan dalam kontrak?"
+        ],
+        "denda": [
+            "Apa yang terjadi jika peminjam terlambat membayar cicilan?",
+            "Apakah ada denda atau penalti atas keterlambatan pembayaran?",
+            "Bagaimana kontrak mengatur konsekuensi keterlambatan pembayaran?",
+            "Berapa besar denda yang dikenakan jika terjadi pelanggaran?",
+            "Apakah kontrak menyebutkan sanksi terkait keterlambatan pembayaran?"
+        ],
+        "jaminan": [
+            "Apa bentuk jaminan yang diberikan oleh peminjam?",
+            "Bagaimana jaminan atau agunan diatur dalam kontrak ini?",
+            "Siapa yang memegang hak atas jaminan sampai pembiayaan lunas?",
+            "Apakah aset yang dibiayai dijadikan jaminan?",
+            "Bagaimana proses eksekusi jaminan dijelaskan dalam perjanjian?"
+        ],
+        "hukum": [
+            "Pengadilan mana yang berwenang menyelesaikan sengketa?",
+            "Bagaimana kontrak mengatur yurisdiksi hukum?",
+            "Apakah ada klausul yang menetapkan wilayah hukum tertentu?",
+            "Jika terjadi sengketa, di mana perkara akan diselesaikan?",
+            "Bagaimana ketentuan hukum dijelaskan dalam kontrak ini?"
+        ]
 }
 
 # ==============================
