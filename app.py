@@ -92,7 +92,7 @@ else:
 llm = ChatGoogleGenerativeAI(
     model="models/gemini-2.5-flash",
     temperature=0.8,
-    top_p=0.95,
+    top_p=0.9,
     max_output_tokens=1000,
     convert_system_message_to_human=True,
     verbose=False,
@@ -141,8 +141,8 @@ def retrieve_from_doc(query, file_name, top_k=5):
 def ask_gemini_rag(question, retrieved_chunks):
     joined_context = "\n\n".join(retrieved_chunks)
     prompt = f"""
-Kamu adalah asisten hukum profesional.
-Gunakan hanya konteks berikut untuk menjawab pertanyaan secara ringkas dan akurat.
+Anda adalah asisten hukum profesional namun komunikatif.
+Analisis isi kontrak pembiayaan berikut untuk menjawab pertanyaan dengan jelas, padat, dan tidak terlalu kaku.
 
 KONTEKS:
 {joined_context}
@@ -150,10 +150,11 @@ KONTEKS:
 PERTANYAAN:
 {question}
 
-Aturan:
-- Jawab langsung berdasarkan isi konteks.
-- Jangan buat asumsi.
-- Jika informasi tidak ada, katakan "Informasi tidak ditemukan dalam konteks."
+Petunjuk:
+- Gunakan informasi yang ada pada konteks secara langsung.
+- Jangan membuat asumsi jika data tidak disebutkan.
+- Jelaskan jawaban Anda dengan bahasa alami, profesional, dan mudah dipahami.
+- Jika tidak ada informasi relevan, tulis dengan sopan bahwa data tersebut tidak tersedia dalam konteks.
 """
     response = llm.invoke(prompt)
     return clean_text(response.content.strip())
