@@ -262,7 +262,7 @@ auto_questions = {
 # 📥 INPUT SESUAI MODE
 # ==============================
 if mode == "Pertanyaan Manual":
-    st.markdown("### 📝 Pertanyaan Manual")
+    st.markdown("#### 📝 Pertanyaan Manual")
     user_question = st.text_area(
         "Tulis pertanyaan Anda:",
         placeholder="Contoh: Apa sanksi jika peminjam terlambat membayar?",
@@ -270,7 +270,7 @@ if mode == "Pertanyaan Manual":
     )
     final_question = user_question.strip()
 else:
-    st.markdown("### 💡 Pertanyaan Otomatis")
+    st.markdown("#### 💡 Pertanyaan Otomatis")
     category = st.selectbox("Kategori:", ["— Pilih kategori —"] + list(auto_questions.keys()))
     selected_auto_question = ""
     if category != "— Pilih kategori —":
@@ -299,7 +299,7 @@ if st.button("🚀 Analisis Kontrak", use_container_width=True):
                 answer = ask_gemini_rag(final_question, docs)
 
             st.markdown("---")
-            st.markdown("### 🧩 Hasil Analisis Gemini")
+            st.markdown("#### 🧩 Hasil Analisis Gemini")
             st.markdown(f"<div class='ai-box'>{answer}</div>", unsafe_allow_html=True)
 
             with st.expander("📚 Lihat Sumber Konteks dari Dokumen"):
