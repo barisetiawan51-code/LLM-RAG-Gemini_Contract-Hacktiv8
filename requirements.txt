@@ -1,19 +1,14 @@
-# ===== Streamlit app =====
-streamlit==1.50.0
-
-# ===== Core AI & data =====
+streamlit
+faiss-cpu
 pandas
 numpy
-faiss-cpu
-scikit-learn
 openai
-
-# ===== LangChain + Gemini (kompatibel dgn Python 3.10) =====
-langchain==0.3.7
-langchain-core==0.3.15
-langchain-google-genai==1.0.9
+scikit-learn
 google-generativeai
-
-# ===== Utilities =====
 cosine-similarity
 pydantic<3
+
+# LangChain & Google GenAI kompatibel versi stabil
+langchain==0.2.11
+langchain-core==0.2.23
+langchain-google-genai==0.0.12
