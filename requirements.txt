@@ -2,6 +2,7 @@ streamlit
 faiss-cpu
 pandas
 numpy
+openai
 scikit-learn
 langchain
 langchain-google-genai
