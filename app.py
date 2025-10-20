@@ -4,10 +4,10 @@ import faiss
 import numpy as np
 import pandas as pd
 import streamlit as st
-import google.generativeai as genai
 from sklearn.metrics.pairwise import cosine_similarity
 from langchain_google_genai import ChatGoogleGenerativeAI
 from google.generativeai import embed_content
+import google.generativeai as genai
 
 # ==============================
 # ⚙️ KONFIGURASI DASAR STREAMLIT
@@ -82,7 +82,7 @@ GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", "")
 if not GEMINI_KEY:
     st.error("❌ API Key Gemini belum diset di Streamlit Secrets!")
 else:
-    genai.configure(api_key=GEMINI_KEY)
+    os.environ["GOOGLE_API_KEY"] = GEMINI_KEY
 
 # ==============================
 # 🤖 MODEL GEMINI
