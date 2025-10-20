@@ -6,9 +6,6 @@ openai
 scikit-learn
 google-generativeai
 cosine-similarity
+langchain
+langchain-google-genai
 pydantic<3
-
-# LangChain & Google GenAI kompatibel versi stabil
-langchain==0.2.11
-langchain-core==0.2.23
-langchain-google-genai==0.0.12
