@@ -1,27 +1,11 @@
-# ========== Streamlit App ==========
-streamlit==1.39.0
-
-# ========== Data Handling ==========
-pandas==2.2.2
-numpy==1.26.4
-pyarrow==17.0.0
-fastparquet==2024.5.0
-
-# ========== Machine Learning & Embedding ==========
-scikit-learn==1.5.2
-faiss-cpu==1.8.0.post1
-
-# ========== Google Generative AI ==========
-google-generativeai==0.8.3
-
-# ========== LangChain Integration ==========
-langchain==0.2.14
-langchain-core==0.2.38
-langchain-google-genai==0.0.12
-
-# ========== Utilities ==========
-regex==2024.9.11
-tqdm==4.66.5
-
-# (Opsional untuk development di Colab / local tunneling)
-# pyngrok==7.2.3
+streamlit
+faiss-cpu
+pandas
+numpy
+openai
+scikit-learn
+langchain
+langchain-google-genai
+google-generativeai
+cosine-similarity
+pydantic<2
