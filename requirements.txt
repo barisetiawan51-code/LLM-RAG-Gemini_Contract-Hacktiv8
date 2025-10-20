@@ -4,8 +4,15 @@ pandas
 numpy
 openai
 scikit-learn
-langchain
-langchain-google-genai
+
+# LangChain stack (kompatibel)
+langchain==0.2.14
+langchain-core==0.2.38
+langchain-google-genai==0.0.12
+
+# Google Generative AI SDK
 google-generativeai
+
+# Utils
 cosine-similarity
 pydantic<2
