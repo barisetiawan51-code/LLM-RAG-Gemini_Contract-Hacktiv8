@@ -1,13 +1,5 @@
 # Chatbot LLM berbasis RAG menggunakan Model Gemini Tentang Isi Kontrak
 
-## 🎯Tujuan umum:
-Membangun chatbot LLM berbasis RAG yang dapat memahami dan menjawab pertanyaan tentang isi kontrak tanpa harus dibaca manual oleh pengguna.
-
-## 💼 Masalah bisnis yang ingin diselesaikan:
-* Waktu analisis kontrak terlalu lama.
-* Tingkat kesalahan manusia tinggi.
-* Skalabilitas.
-
 ## 📚 Tentang Dataset
 Dataset ini berisi 30 dokumen kontrak hukum independen yang ditulis dalam bahasa Inggris.
 Setiap kontrak dirancang menyerupai dokumen dunia nyata dengan elemen yang realistis, mencakup:
@@ -16,6 +8,14 @@ Setiap kontrak dirancang menyerupai dokumen dunia nyata dengan elemen yang reali
 3. Beragam kategori, seperti pembiayaan properti, kendaraan, pendidikan, kesehatan, dan pinjaman umum.
 
 Dataset ini menjadi dasar yang kuat untuk melatih dan menguji model kecerdasan buatan dalam tugas pemahaman dokumen hukum, analisis kontrak, serta ekstraksi klausul penting. Unduh Dataset: [Klik di sini untuk mengakses dataset di Kaggle](https://www.kaggle.com/datasets/juniorbueno/synthetic-data-contracts)
+
+## 🎯Tujuan umum:
+Membangun chatbot LLM berbasis RAG yang dapat memahami dan menjawab pertanyaan tentang isi kontrak tanpa harus dibaca manual oleh pengguna.
+
+## 💼 Masalah bisnis yang ingin diselesaikan:
+* Waktu analisis kontrak terlalu lama.
+* Tingkat kesalahan manusia tinggi.
+* Skalabilitas.
 
 ## 🧠 Pertanyaan bisnis yang bisa dijawab chatbot
 
